@@ -90,7 +90,7 @@ export default function KitsPage() {
             value={newKitName}
             onChange={(event) => setNewKitName(event.target.value)}
           />
-          <Button onClick={handleCreate} disabled={creating} className="self-end">
+          <Button onClick={handleCreate} disabled={creating} className="self-end" size="lg">
             {creating ? "Criando..." : "Adicionar kit"}
           </Button>
         </div>
