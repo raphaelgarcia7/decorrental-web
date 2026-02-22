@@ -30,7 +30,7 @@ export default function KitsPage() {
       const response = await getKits(1, 50);
       setKits(response.items);
     } catch {
-      setError("Nao foi possivel carregar os kits.");
+      setError("Não foi possível carregar os kits.");
     } finally {
       setLoading(false);
     }
@@ -64,7 +64,7 @@ export default function KitsPage() {
       setKits((prev) => [created, ...prev]);
       setNewKitName("");
     } catch {
-      setError("Nao foi possivel criar o kit.");
+      setError("Não foi possível criar o kit.");
     } finally {
       setCreating(false);
     }
@@ -75,7 +75,7 @@ export default function KitsPage() {
       <div className="flex flex-col gap-2">
         <p className="text-xs uppercase tracking-[0.3em] text-white/40">Catalogo</p>
         <h1 className="text-3xl font-semibold text-white" style={{ fontFamily: "var(--font-heading)" }}>
-          Kits Disponiveis
+          Kits Disponíveis
         </h1>
         <p className="text-sm text-white/60">
           Crie, edite e acompanhe os kits ativos no sistema.
@@ -86,7 +86,7 @@ export default function KitsPage() {
         <div className="grid gap-4 md:grid-cols-[1.4fr_0.6fr]">
           <Input
             label="Novo kit"
-            placeholder="Ex: Kit Basico Monica"
+            placeholder="Ex: Kit Básico Mônica"
             value={newKitName}
             onChange={(event) => setNewKitName(event.target.value)}
           />
@@ -116,7 +116,7 @@ export default function KitsPage() {
           ) : filteredKits.length === 0 ? (
             <EmptyState
               title="Nenhum kit encontrado"
-              description="Crie o primeiro kit para comecar a operar."
+              description="Crie o primeiro kit para começar a operar."
               actionLabel="Criar kit"
               onAction={() => router.push("/kits")}
             />

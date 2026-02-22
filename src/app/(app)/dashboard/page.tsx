@@ -62,7 +62,7 @@ export default function DashboardPage() {
 
         setUpcoming(sorted);
       } catch {
-        setError("Nao foi possivel carregar o dashboard.");
+        setError("Não foi possível carregar o dashboard.");
       } finally {
         setLoading(false);
       }
@@ -87,7 +87,7 @@ export default function DashboardPage() {
 
       <section className="grid gap-6 md:grid-cols-3">
         <StatCard label="Kits cadastrados" value={kitsCount} helper="Total na base" />
-        <StatCard label="Reservas ativas" value={upcoming.length} helper="Proximos dias" />
+        <StatCard label="Reservas ativas" value={upcoming.length} helper="Próximos dias" />
         <StatCard label="Status" value={occupancyLabel} helper="Resumo rapido" />
       </section>
 
@@ -100,10 +100,10 @@ export default function DashboardPage() {
               className="text-xl font-semibold text-white"
               style={{ fontFamily: "var(--font-heading)" }}
             >
-              Proximas reservas
+              Próximas reservas
             </h2>
             <p className="mt-1 text-sm text-white/60">
-              Visualizacao rapida das reservas ativas para preparar a operacao.
+              Visualização rápida das reservas ativas para preparar a operação.
             </p>
           </div>
           <Badge tone="neutral" label={loading ? "Atualizando" : "Hoje"} />

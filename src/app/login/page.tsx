@@ -28,7 +28,7 @@ export default function LoginPage() {
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.status === 401) {
-          setError("Usuario ou senha invalidos.");
+          setError("Usuário ou senha inválidos.");
         } else {
           setError(err.details?.detail ?? err.message);
         }
@@ -57,7 +57,7 @@ export default function LoginPage() {
         <Card className="mt-8">
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
             <Input
-              label="Usuario"
+              label="Usuário"
               value={username}
               onChange={(event) => setUsername(event.target.value)}
               autoComplete="username"

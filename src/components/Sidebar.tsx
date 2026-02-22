@@ -7,7 +7,7 @@ import { cx } from "@/lib/classNames";
 const navItems = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/kits", label: "Kits" },
-  { href: "/calendar", label: "Calendario" },
+  { href: "/calendar", label: "Calendário" },
 ];
 
 export const Sidebar = () => {
@@ -24,7 +24,7 @@ export const Sidebar = () => {
           Controle de Kits
         </p>
         <p className="mt-2 text-sm text-white/50">
-          Operacao diaria e reservas inteligentes.
+          Operação diária e reservas inteligentes.
         </p>
       </div>
 

@@ -15,7 +15,7 @@ export const Topbar = () => {
   return (
     <header className="flex items-center justify-between">
       <div>
-        <p className="text-xs uppercase tracking-[0.3em] text-white/40">Visao Geral</p>
+        <p className="text-xs uppercase tracking-[0.3em] text-white/40">Visão Geral</p>
         <h1
           className="mt-2 text-3xl font-semibold text-white"
           style={{ fontFamily: "var(--font-heading)" }}

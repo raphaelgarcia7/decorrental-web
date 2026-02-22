@@ -98,7 +98,7 @@ export default function CalendarPage() {
           .slice(0, MAX_ITEMS);
         setItems(sorted);
       } catch {
-        setError("Nao foi possivel carregar o calendario.");
+        setError("Não foi possível carregar o calendário.");
       } finally {
         setLoading(false);
       }
@@ -179,7 +179,7 @@ export default function CalendarPage() {
       <div>
         <p className="text-xs uppercase tracking-[0.3em] text-white/40">Agenda</p>
         <h1 className="text-3xl font-semibold text-white" style={{ fontFamily: "var(--font-heading)" }}>
-          Calendario de reservas
+          Calendário de reservas
         </h1>
         <p className="text-sm text-white/60">
           Visualize rapidamente os kits em uso e os proximos periodos.
@@ -202,7 +202,7 @@ export default function CalendarPage() {
                 size="sm"
                 onClick={() => setView("month")}
               >
-                Mes
+                Mês
               </Button>
               <Button
                 variant={view === "week" ? "secondary" : "ghost"}
@@ -245,7 +245,7 @@ export default function CalendarPage() {
                   {view === "month" ? formatMonthLabel(cursorDate) : "Semana selecionada"}
                 </p>
                 <Button variant="ghost" size="sm" onClick={handleNext}>
-                  Avancar
+                  Avançar
                 </Button>
               </div>
 

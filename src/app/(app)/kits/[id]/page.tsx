@@ -35,7 +35,7 @@ export default function KitDetailPage() {
       setKitName(kit.name);
       setReservations(kit.reservations);
     } catch {
-      setError("Nao foi possivel carregar o kit.");
+      setError("Não foi possível carregar o kit.");
     } finally {
       setLoading(false);
     }
@@ -55,7 +55,7 @@ export default function KitDetailPage() {
 
   const handleReserve = async () => {
     if (!startDate || !endDate) {
-      setActionMessage("Informe as datas de inicio e fim.");
+      setActionMessage("Informe as datas de início e fim.");
       return;
     }
 
@@ -66,7 +66,7 @@ export default function KitDetailPage() {
       setStartDate("");
       setEndDate("");
     } catch {
-      setActionMessage("Nao foi possivel reservar. Verifique conflito de datas.");
+      setActionMessage("Não foi possível reservar. Verifique conflito de datas.");
     }
   };
 
@@ -76,7 +76,7 @@ export default function KitDetailPage() {
       setActionMessage(result.message);
       await loadKit();
     } catch {
-      setActionMessage("Nao foi possivel cancelar a reserva.");
+      setActionMessage("Não foi possível cancelar a reserva.");
     }
   };
 
@@ -101,7 +101,7 @@ export default function KitDetailPage() {
           <Skeleton className="h-16 w-full rounded-2xl" />
         </div>
       ) : error ? (
-        <EmptyState title="Kit nao encontrado" description="Volte para a lista e selecione outro kit." />
+        <EmptyState title="Kit não encontrado" description="Volte para a lista e selecione outro kit." />
       ) : (
         <>
           <Card>
@@ -130,7 +130,7 @@ export default function KitDetailPage() {
               <div className="mt-6">
                 <EmptyState
                   title="Nenhuma reserva ainda"
-                  description="Use o formulario acima para reservar este kit."
+                  description="Use o formulário acima para reservar este kit."
                 />
               </div>
             ) : (
@@ -173,7 +173,7 @@ export default function KitDetailPage() {
                 Kit em uso
               </h2>
               <p className="mt-2 text-sm text-white/60">
-                Ha reservas ativas. Mantenha o planejamento de retirada e devolucao atualizado.
+                Há reservas ativas. Mantenha o planejamento de retirada e devolução atualizado.
               </p>
             </Card>
           ) : null}
