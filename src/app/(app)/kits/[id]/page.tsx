@@ -7,6 +7,8 @@ import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { EmptyState } from "@/components/EmptyState";
 import { Input } from "@/components/Input";
+import { Alert } from "@/components/Alert";
+import { Skeleton } from "@/components/Skeleton";
 import { cancelReservation, getKit, reserveKit } from "@/lib/api";
 import { useAuthGuard } from "@/lib/useAuthGuard";
 import { formatRange } from "@/lib/date";
@@ -93,7 +95,11 @@ export default function KitDetailPage() {
       </div>
 
       {loading ? (
-        <p className="text-sm text-white/60">Carregando...</p>
+        <div className="space-y-3">
+          <Skeleton className="h-5 w-40" />
+          <Skeleton className="h-16 w-full rounded-2xl" />
+          <Skeleton className="h-16 w-full rounded-2xl" />
+        </div>
       ) : error ? (
         <EmptyState title="Kit nao encontrado" description="Volte para a lista e selecione outro kit." />
       ) : (
@@ -107,9 +113,7 @@ export default function KitDetailPage() {
               <Input label="Fim" type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} />
               <Button onClick={handleReserve}>Reservar</Button>
             </div>
-            {actionMessage ? (
-              <p className="mt-3 text-xs text-white/60">{actionMessage}</p>
-            ) : null}
+            {actionMessage ? <div className="mt-3"><Alert tone="info" message={actionMessage} /></div> : null}
           </Card>
 
           <Card>

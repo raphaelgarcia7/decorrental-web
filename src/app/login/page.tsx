@@ -7,6 +7,7 @@ import { setToken } from "@/lib/auth";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { Input } from "@/components/Input";
+import { Alert } from "@/components/Alert";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -25,11 +26,15 @@ export default function LoginPage() {
       setToken(result.accessToken);
       router.push("/dashboard");
     } catch (err) {
-      const message =
-        err instanceof ApiError
-          ? err.details?.detail ?? err.message
-          : "Falha ao autenticar.";
-      setError(message);
+      if (err instanceof ApiError) {
+        if (err.status === 401) {
+          setError("Usuario ou senha invalidos.");
+        } else {
+          setError(err.details?.detail ?? err.message);
+        }
+      } else {
+        setError("Falha ao autenticar.");
+      }
     } finally {
       setLoading(false);
     }
@@ -64,11 +69,7 @@ export default function LoginPage() {
               onChange={(event) => setPassword(event.target.value)}
               autoComplete="current-password"
             />
-            {error ? (
-              <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-xs text-red-200">
-                {error}
-              </div>
-            ) : null}
+            {error ? <Alert tone="error" message={error} /> : null}
             <Button type="submit" disabled={loading}>
               {loading ? "Entrando..." : "Entrar"}
             </Button>

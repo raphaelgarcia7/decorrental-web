@@ -6,6 +6,8 @@ import { StatCard } from "@/components/StatCard";
 import { Card } from "@/components/Card";
 import { Badge } from "@/components/Badge";
 import { EmptyState } from "@/components/EmptyState";
+import { Alert } from "@/components/Alert";
+import { Skeleton } from "@/components/Skeleton";
 import { getKits, getKit } from "@/lib/api";
 import { useAuthGuard } from "@/lib/useAuthGuard";
 import { formatDate } from "@/lib/date";
@@ -24,6 +26,7 @@ export default function DashboardPage() {
   const [kitsCount, setKitsCount] = useState(0);
   const [upcoming, setUpcoming] = useState<UpcomingReservation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!ready) {
@@ -32,6 +35,7 @@ export default function DashboardPage() {
 
     const load = async () => {
       setLoading(true);
+      setError(null);
       try {
         const kitsResponse = await getKits(1, 20);
         setKitsCount(kitsResponse.totalCount);
@@ -57,6 +61,8 @@ export default function DashboardPage() {
           .slice(0, MAX_UPCOMING);
 
         setUpcoming(sorted);
+      } catch {
+        setError("Nao foi possivel carregar o dashboard.");
       } finally {
         setLoading(false);
       }
@@ -85,6 +91,8 @@ export default function DashboardPage() {
         <StatCard label="Status" value={occupancyLabel} helper="Resumo rapido" />
       </section>
 
+      {error ? <Alert tone="error" message={error} /> : null}
+
       <Card tone="highlight">
         <div className="flex items-center justify-between">
           <div>
@@ -102,7 +110,11 @@ export default function DashboardPage() {
         </div>
 
         {loading ? (
-          <p className="mt-6 text-sm text-white/50">Carregando reservas...</p>
+          <div className="mt-6 space-y-3">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-14 w-full rounded-2xl" />
+            <Skeleton className="h-14 w-full rounded-2xl" />
+          </div>
         ) : upcoming.length === 0 ? (
           <div className="mt-6">
             <EmptyState

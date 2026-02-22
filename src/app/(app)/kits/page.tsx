@@ -7,6 +7,8 @@ import { Card } from "@/components/Card";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { EmptyState } from "@/components/EmptyState";
+import { Alert } from "@/components/Alert";
+import { Skeleton } from "@/components/Skeleton";
 import { createKit, getKits } from "@/lib/api";
 import { useAuthGuard } from "@/lib/useAuthGuard";
 import type { KitSummary } from "@/lib/types";
@@ -19,12 +21,16 @@ export default function KitsPage() {
   const [newKitName, setNewKitName] = useState("");
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const loadKits = async () => {
     setLoading(true);
+    setError(null);
     try {
       const response = await getKits(1, 50);
       setKits(response.items);
+    } catch {
+      setError("Nao foi possivel carregar os kits.");
     } finally {
       setLoading(false);
     }
@@ -47,14 +53,18 @@ export default function KitsPage() {
 
   const handleCreate = async () => {
     if (!newKitName.trim()) {
+      setError("Informe um nome valido para o kit.");
       return;
     }
 
     setCreating(true);
+    setError(null);
     try {
       const created = await createKit(newKitName.trim());
       setKits((prev) => [created, ...prev]);
       setNewKitName("");
+    } catch {
+      setError("Nao foi possivel criar o kit.");
     } finally {
       setCreating(false);
     }
@@ -94,9 +104,15 @@ export default function KitsPage() {
             value={filter}
             onChange={(event) => setFilter(event.target.value)}
           />
+          {error ? <Alert tone="error" message={error} /> : null}
 
           {loading ? (
-            <p className="text-sm text-white/60">Carregando kits...</p>
+            <div className="space-y-3">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-10 w-full rounded-2xl" />
+              <Skeleton className="h-10 w-full rounded-2xl" />
+              <Skeleton className="h-10 w-full rounded-2xl" />
+            </div>
           ) : filteredKits.length === 0 ? (
             <EmptyState
               title="Nenhum kit encontrado"

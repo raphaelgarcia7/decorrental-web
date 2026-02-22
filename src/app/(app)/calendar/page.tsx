@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/Card";
 import { Badge } from "@/components/Badge";
 import { EmptyState } from "@/components/EmptyState";
+import { Alert } from "@/components/Alert";
+import { Skeleton } from "@/components/Skeleton";
 import { getKits, getKit } from "@/lib/api";
 import { useAuthGuard } from "@/lib/useAuthGuard";
 import { formatRange } from "@/lib/date";
@@ -20,6 +22,7 @@ export default function CalendarPage() {
   const ready = useAuthGuard();
   const [items, setItems] = useState<CalendarItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!ready) {
@@ -28,6 +31,7 @@ export default function CalendarPage() {
 
     const load = async () => {
       setLoading(true);
+      setError(null);
       try {
         const kitsResponse = await getKits(1, 20);
         const results: CalendarItem[] = [];
@@ -47,6 +51,8 @@ export default function CalendarPage() {
           .sort((a, b) => a.range.localeCompare(b.range))
           .slice(0, MAX_ITEMS);
         setItems(sorted);
+      } catch {
+        setError("Nao foi possivel carregar o calendario.");
       } finally {
         setLoading(false);
       }
@@ -80,8 +86,14 @@ export default function CalendarPage() {
           <Badge tone="neutral" label={`${activeCount} ativas`} />
         </div>
 
+        {error ? <div className="mt-4"><Alert tone="error" message={error} /></div> : null}
+
         {loading ? (
-          <p className="mt-4 text-sm text-white/60">Carregando agenda...</p>
+          <div className="mt-4 space-y-3">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-12 w-full rounded-2xl" />
+            <Skeleton className="h-12 w-full rounded-2xl" />
+          </div>
         ) : items.length === 0 ? (
           <div className="mt-6">
             <EmptyState
