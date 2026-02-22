@@ -111,7 +111,9 @@ export default function KitDetailPage() {
             <div className="mt-4 grid gap-4 md:grid-cols-3">
               <Input label="Inicio" type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} />
               <Input label="Fim" type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} />
-              <Button onClick={handleReserve} size="lg">Reservar</Button>
+              <Button onClick={handleReserve} size="md" className="h-[52px] self-end">
+                Reservar
+              </Button>
             </div>
             {actionMessage ? <div className="mt-3"><Alert tone="info" message={actionMessage} /></div> : null}
           </Card>
