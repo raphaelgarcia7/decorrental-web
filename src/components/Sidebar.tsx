@@ -14,7 +14,7 @@ export const Sidebar = () => {
   const pathname = usePathname();
 
   return (
-    <aside className="flex h-full w-64 flex-col gap-8 border-r border-[var(--border)] bg-[var(--surface)]/80 px-6 py-8">
+    <aside className="flex min-h-screen w-64 flex-col gap-8 border-r border-[var(--border)] bg-[var(--surface)]/80 px-6 py-8">
       <div>
         <p className="text-xs uppercase tracking-[0.35em] text-white/40">DecorRental</p>
         <p
