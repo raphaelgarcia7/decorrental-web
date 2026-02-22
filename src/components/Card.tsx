@@ -10,7 +10,7 @@ export const Card = ({ className, tone = "default", ...props }: CardProps) => (
     className={cx(
       "rounded-3xl border border-[var(--border)]",
       tone === "highlight"
-        ? "bg-gradient-to-br from-[#1a2333] via-[#151e2c] to-[#0f1622]"
+        ? "bg-gradient-to-br from-[#1b2636] via-[#141f30] to-[#0e1725]"
         : "bg-[var(--surface)]",
       "p-6 shadow-[0_20px_40px_rgba(0,0,0,0.25)]",
       className
