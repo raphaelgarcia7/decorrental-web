@@ -7,6 +7,8 @@ import { cx } from "@/lib/classNames";
 const navItems = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/kits", label: "Kits" },
+  { href: "/catalog/item-types", label: "Itens de estoque" },
+  { href: "/catalog/categories", label: "Categorias" },
   { href: "/calendar", label: "Calendário" },
 ];
 
@@ -24,7 +26,7 @@ export const Sidebar = () => {
           Controle de Kits
         </p>
         <p className="mt-2 text-sm text-white/50">
-          Operação diária e reservas inteligentes.
+          Operação diária, estoque e reservas inteligentes.
         </p>
       </div>
 
@@ -49,7 +51,7 @@ export const Sidebar = () => {
       </nav>
 
       <div className="mt-auto rounded-2xl border border-[var(--border)] bg-[var(--surface-2)] p-4 text-xs text-white/60">
-        Base conectada a API DecorRental.
+        Base conectada à API DecorRental.
       </div>
     </aside>
   );

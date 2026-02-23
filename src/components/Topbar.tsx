@@ -15,12 +15,12 @@ export const Topbar = () => {
   return (
     <header className="flex items-center justify-between">
       <div>
-        <p className="text-xs uppercase tracking-[0.3em] text-white/40">Visão Geral</p>
+        <p className="text-xs uppercase tracking-[0.3em] text-white/40">Visão geral</p>
         <h1
           className="mt-2 text-3xl font-semibold text-white"
           style={{ fontFamily: "var(--font-heading)" }}
         >
-          Painel Operacional
+          Painel operacional
         </h1>
       </div>
       <Button variant="secondary" size="sm" onClick={handleLogout}>

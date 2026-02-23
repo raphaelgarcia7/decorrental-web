@@ -2,20 +2,18 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Card } from "@/components/Card";
-import { Button } from "@/components/Button";
-import { Input } from "@/components/Input";
-import { EmptyState } from "@/components/EmptyState";
 import { Alert } from "@/components/Alert";
+import { Button } from "@/components/Button";
+import { Card } from "@/components/Card";
+import { EmptyState } from "@/components/EmptyState";
+import { Input } from "@/components/Input";
 import { Skeleton } from "@/components/Skeleton";
-import { createKit, getKits } from "@/lib/api";
+import { ApiError, createKit, getKits } from "@/lib/api";
 import { useAuthGuard } from "@/lib/useAuthGuard";
 import type { KitSummary } from "@/lib/types";
 
 export default function KitsPage() {
   const ready = useAuthGuard();
-  const router = useRouter();
   const [kits, setKits] = useState<KitSummary[]>([]);
   const [filter, setFilter] = useState("");
   const [newKitName, setNewKitName] = useState("");
@@ -29,8 +27,12 @@ export default function KitsPage() {
     try {
       const response = await getKits(1, 50);
       setKits(response.items);
-    } catch {
-      setError("Não foi possível carregar os kits.");
+    } catch (requestError) {
+      setError(
+        requestError instanceof ApiError
+          ? requestError.details?.detail ?? requestError.message
+          : "Não foi possível carregar os kits."
+      );
     } finally {
       setLoading(false);
     }
@@ -40,31 +42,37 @@ export default function KitsPage() {
     if (!ready) {
       return;
     }
-    loadKits();
+
+    void loadKits();
   }, [ready]);
 
   const filteredKits = useMemo(() => {
     if (!filter.trim()) {
       return kits;
     }
+
     const term = filter.toLowerCase();
     return kits.filter((kit) => kit.name.toLowerCase().includes(term));
   }, [kits, filter]);
 
   const handleCreate = async () => {
     if (!newKitName.trim()) {
-      setError("Informe um nome valido para o kit.");
+      setError("Informe um nome válido para o kit.");
       return;
     }
 
     setCreating(true);
     setError(null);
     try {
-      const created = await createKit(newKitName.trim());
-      setKits((prev) => [created, ...prev]);
+      const createdKit = await createKit(newKitName.trim());
+      setKits((currentKits) => [createdKit, ...currentKits]);
       setNewKitName("");
-    } catch {
-      setError("Não foi possível criar o kit.");
+    } catch (requestError) {
+      setError(
+        requestError instanceof ApiError
+          ? requestError.details?.detail ?? requestError.message
+          : "Não foi possível criar o kit."
+      );
     } finally {
       setCreating(false);
     }
@@ -75,18 +83,18 @@ export default function KitsPage() {
       <div className="flex flex-col gap-2">
         <p className="text-xs uppercase tracking-[0.3em] text-white/40">Kits</p>
         <h1 className="text-3xl font-semibold text-white" style={{ fontFamily: "var(--font-heading)" }}>
-          Kits Disponíveis
+          Temas de kits
         </h1>
         <p className="text-sm text-white/60">
-          Crie, edite e acompanhe os kits ativos no sistema.
+          Crie temas e gerencie reservas vinculadas às categorias globais.
         </p>
       </div>
 
       <Card>
         <div className="grid gap-4 md:grid-cols-[1.4fr_0.6fr]">
           <Input
-            label="Novo kit"
-            placeholder="Ex: Kit Básico Mônica"
+            label="Novo tema"
+            placeholder="Ex.: Patrulha Canina"
             value={newKitName}
             onChange={(event) => setNewKitName(event.target.value)}
           />
@@ -104,6 +112,7 @@ export default function KitsPage() {
             value={filter}
             onChange={(event) => setFilter(event.target.value)}
           />
+
           {error ? <Alert tone="error" message={error} /> : null}
 
           {loading ? (
@@ -116,9 +125,9 @@ export default function KitsPage() {
           ) : filteredKits.length === 0 ? (
             <EmptyState
               title="Nenhum kit encontrado"
-              description="Crie o primeiro kit para começar a operar."
-              actionLabel="Criar kit"
-              onAction={() => router.push("/kits")}
+              description="Crie o primeiro tema para começar a operar."
+              actionLabel="Recarregar"
+              onAction={() => void loadKits()}
             />
           ) : (
             <div className="grid gap-3">

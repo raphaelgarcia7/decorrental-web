@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { authenticate, ApiError } from "@/lib/api";
-import { setToken } from "@/lib/auth";
+import { Alert } from "@/components/Alert";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { Input } from "@/components/Input";
-import { Alert } from "@/components/Alert";
+import { authenticate, ApiError } from "@/lib/api";
+import { setToken } from "@/lib/auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -22,15 +22,15 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const result = await authenticate(username.trim(), password);
-      setToken(result.accessToken);
+      const response = await authenticate(username.trim(), password);
+      setToken(response.accessToken);
       router.push("/dashboard");
-    } catch (err) {
-      if (err instanceof ApiError) {
-        if (err.status === 401) {
+    } catch (requestError) {
+      if (requestError instanceof ApiError) {
+        if (requestError.status === 401) {
           setError("Usuário ou senha inválidos.");
         } else {
-          setError(err.details?.detail ?? err.message);
+          setError(requestError.details?.detail ?? requestError.message);
         }
       } else {
         setError("Falha ao autenticar.");
@@ -48,10 +48,10 @@ export default function LoginPage() {
           className="mt-4 text-3xl font-semibold text-white"
           style={{ fontFamily: "var(--font-heading)" }}
         >
-          Acesso Operacional
+          Acesso operacional
         </h1>
         <p className="mt-2 text-sm text-white/60">
-          Entre com seu usuario para gerenciar kits e reservas.
+          Entre com seu usuário para gerenciar kits, estoque e reservas.
         </p>
 
         <Card className="mt-8">

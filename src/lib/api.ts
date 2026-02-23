@@ -2,7 +2,9 @@ import { API_BASE_URL } from "./config";
 import { getToken } from "./auth";
 import type {
   AuthTokenResponse,
+  Category,
   CancelResponse,
+  ItemType,
   KitDetail,
   KitSummary,
   PagedResponse,
@@ -24,7 +26,7 @@ export class ApiError extends Error {
 
 const buildUrl = (path: string) => `${API_BASE_URL}${path}`;
 
-const getAuthHeaders = () => {
+const getAuthHeaders = (): Record<string, string> => {
   const token = getToken();
   if (!token) {
     return {};
@@ -57,6 +59,10 @@ const request = async <T>(
       response.status,
       details
     );
+  }
+
+  if (response.status === 204) {
+    return undefined as T;
   }
 
   return (await response.json()) as T;
@@ -98,13 +104,14 @@ export const getKitReservations = async (id: string): Promise<Reservation[]> =>
 
 export const reserveKit = async (
   kitId: string,
+  kitCategoryId: string,
   startDate: string,
   endDate: string
 ): Promise<ReserveResponse> =>
   request<ReserveResponse>(`/api/kits/${kitId}/reservations`, {
     method: "POST",
     headers: getAuthHeaders(),
-    body: JSON.stringify({ startDate, endDate }),
+    body: JSON.stringify({ kitCategoryId, startDate, endDate }),
   });
 
 export const cancelReservation = async (
@@ -114,4 +121,52 @@ export const cancelReservation = async (
   request<CancelResponse>(`/api/kits/${kitId}/reservations/${reservationId}/cancel`, {
     method: "POST",
     headers: getAuthHeaders(),
+  });
+
+export const getItemTypes = async (): Promise<ItemType[]> =>
+  request<ItemType[]>("/api/item-types", {
+    headers: getAuthHeaders(),
+  });
+
+export const createItemType = async (
+  name: string,
+  totalStock: number
+): Promise<ItemType> =>
+  request<ItemType>("/api/item-types", {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ name, totalStock }),
+  });
+
+export const updateItemStock = async (
+  itemTypeId: string,
+  totalStock: number
+): Promise<ItemType> =>
+  request<ItemType>(`/api/item-types/${itemTypeId}/stock`, {
+    method: "PATCH",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ totalStock }),
+  });
+
+export const getCategories = async (): Promise<Category[]> =>
+  request<Category[]>("/api/categories", {
+    headers: getAuthHeaders(),
+  });
+
+export const createCategory = async (name: string): Promise<Category> =>
+  request<Category>("/api/categories", {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ name }),
+  });
+
+export const addCategoryItem = async (
+  categoryId: string,
+  itemTypeId: string,
+  quantity: number
+): Promise<Category> =>
+  request<Category>(`/api/categories/${categoryId}/items`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ itemTypeId, quantity }),
   });
