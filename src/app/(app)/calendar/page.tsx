@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/Skeleton";
 import { Button } from "@/components/Button";
 import { getKits, getKit } from "@/lib/api";
 import { useAuthGuard } from "@/lib/useAuthGuard";
+import { getReservationStatusLabel } from "@/lib/reservationLabels";
 import {
   addDays,
   addMonths,
@@ -182,7 +183,7 @@ export default function CalendarPage() {
           Calendário de reservas
         </h1>
         <p className="text-sm text-white/60">
-          Visualize rapidamente os kits em uso e os proximos periodos.
+          Visualize rapidamente os kits em uso e os pr?ximos per?odos.
         </p>
       </div>
 
@@ -334,7 +335,10 @@ export default function CalendarPage() {
                     >
                       <div className="flex items-center justify-between">
                         <p className="text-sm font-semibold text-white">{item.kitName}</p>
-                        <Badge tone={item.status === "Active" ? "success" : "neutral"} label={item.status} />
+                        <Badge
+                          tone={item.status === "Active" ? "success" : "neutral"}
+                          label={getReservationStatusLabel(item.status)}
+                        />
                       </div>
                       <p className="mt-2 text-xs text-white/60">{item.range}</p>
                     </div>

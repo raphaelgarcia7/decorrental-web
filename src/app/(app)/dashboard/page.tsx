@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/Skeleton";
 import { getKits, getKit } from "@/lib/api";
 import { useAuthGuard } from "@/lib/useAuthGuard";
 import { formatDate } from "@/lib/date";
+import { getReservationStatusLabel } from "@/lib/reservationLabels";
 
 const MAX_UPCOMING = 6;
 
@@ -88,7 +89,7 @@ export default function DashboardPage() {
       <section className="grid gap-6 md:grid-cols-3">
         <StatCard label="Kits cadastrados" value={kitsCount} helper="Total na base" />
         <StatCard label="Reservas ativas" value={upcoming.length} helper="Próximos dias" />
-        <StatCard label="Status" value={occupancyLabel} helper="Resumo rapido" />
+        <StatCard label="Status" value={occupancyLabel} helper="Resumo r?pido" />
       </section>
 
       {error ? <Alert tone="error" message={error} /> : null}
@@ -132,10 +133,10 @@ export default function DashboardPage() {
                 <div>
                   <p className="text-sm font-semibold text-white">{reservation.kitName}</p>
                   <p className="text-xs text-white/60">
-                    {formatDate(reservation.startDate)} ate {formatDate(reservation.endDate)}
+                    {formatDate(reservation.startDate)} at? {formatDate(reservation.endDate)}
                   </p>
                 </div>
-                <Badge tone="success" label={reservation.status} />
+                <Badge tone="success" label={getReservationStatusLabel(reservation.status)} />
               </div>
             ))}
           </div>

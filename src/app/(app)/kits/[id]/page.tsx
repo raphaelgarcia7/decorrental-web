@@ -12,6 +12,7 @@ import { Select } from "@/components/Select";
 import { Skeleton } from "@/components/Skeleton";
 import { ApiError, cancelReservation, getCategories, getKit, reserveKit } from "@/lib/api";
 import { formatRange } from "@/lib/date";
+import { getReservationStatusLabel } from "@/lib/reservationLabels";
 import { useAuthGuard } from "@/lib/useAuthGuard";
 import type { Category, Reservation } from "@/lib/types";
 
@@ -61,7 +62,7 @@ export default function KitDetailPage() {
       setError(
         requestError instanceof ApiError
           ? requestError.details?.detail ?? requestError.message
-          : "Nao foi possivel carregar os detalhes do kit."
+          : "Não foi possível carregar os detalhes do kit."
       );
     } finally {
       setLoading(false);
@@ -88,13 +89,13 @@ export default function KitDetailPage() {
     }
 
     if (!startDate || !endDate) {
-      setFeedbackMessage("Informe as datas de inicio e fim.");
+      setFeedbackMessage("Informe as datas de início e fim.");
       return;
     }
 
     const normalizedReason = stockOverrideReason.trim();
     if (allowStockOverride && !normalizedReason) {
-      setFeedbackMessage("Informe a observacao do override de estoque.");
+      setFeedbackMessage("Informe a observação da exceção de estoque.");
       return;
     }
 
@@ -113,7 +114,7 @@ export default function KitDetailPage() {
 
       setFeedbackMessage(
         response.isStockOverride
-          ? `${response.message} Override de estoque aplicado.`
+          ? `${response.message} Exce??o de estoque aplicada.`
           : response.message
       );
 
@@ -126,7 +127,7 @@ export default function KitDetailPage() {
       setFeedbackMessage(
         requestError instanceof ApiError
           ? requestError.details?.detail ?? requestError.message
-          : "Nao foi possivel criar a reserva."
+          : "Não foi possível criar a reserva."
       );
     } finally {
       setReserving(false);
@@ -146,7 +147,7 @@ export default function KitDetailPage() {
       setFeedbackMessage(
         requestError instanceof ApiError
           ? requestError.details?.detail ?? requestError.message
-          : "Nao foi possivel cancelar a reserva."
+          : "Não foi possível cancelar a reserva."
       );
     } finally {
       setCancellingReservationId(null);
@@ -174,7 +175,7 @@ export default function KitDetailPage() {
           <Skeleton className="h-16 w-full rounded-2xl" />
         </div>
       ) : error ? (
-        <EmptyState title="Kit nao encontrado" description="Volte para a lista e selecione outro kit." />
+        <EmptyState title="Kit não encontrado" description="Volte para a lista e selecione outro kit." />
       ) : (
         <>
           <Card>
@@ -195,7 +196,7 @@ export default function KitDetailPage() {
                 ))}
               </Select>
               <Input
-                label="Inicio"
+                label="Início"
                 type="date"
                 value={startDate}
                 onChange={(event) => setStartDate(event.target.value)}
@@ -219,21 +220,21 @@ export default function KitDetailPage() {
                   onChange={(event) => setAllowStockOverride(event.target.checked)}
                   className="h-4 w-4 rounded border-[var(--border)] bg-[var(--surface)]"
                 />
-                Permitir reserva com override de estoque
+                Permitir reserva fora da disponibilidade de estoque
               </label>
               <p className="mt-2 text-xs text-white/60">
-                Use apenas quando houver aprovacao operacional para reservar mesmo com falta de itens.
+                Use apenas quando houver aprovação operacional para reservar mesmo com falta de itens.
               </p>
 
               {allowStockOverride ? (
                 <label className="mt-3 flex flex-col gap-2 text-sm text-white/80">
-                  <span className="text-xs uppercase tracking-[0.2em]">Observacao da excecao</span>
+                  <span className="text-xs uppercase tracking-[0.2em]">Observação da exceção</span>
                   <textarea
                     value={stockOverrideReason}
                     onChange={(event) => setStockOverrideReason(event.target.value)}
                     rows={3}
                     maxLength={500}
-                    placeholder="Explique o motivo da excecao de estoque."
+                    placeholder="Explique o motivo da exceção de estoque."
                     className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-white placeholder:text-white/30 focus:border-[var(--accent)] focus:outline-none"
                   />
                 </label>
@@ -265,7 +266,7 @@ export default function KitDetailPage() {
               <div className="mt-6">
                 <EmptyState
                   title="Nenhuma reserva ainda"
-                  description="Use o formulario acima para reservar este kit."
+                  description="Use o formulário acima para reservar este kit."
                 />
               </div>
             ) : (
@@ -284,17 +285,17 @@ export default function KitDetailPage() {
                       </p>
                       {reservation.isStockOverride ? (
                         <p className="mt-1 text-xs text-amber-200">
-                          Override de estoque: {reservation.stockOverrideReason ?? "Sem observacao."}
+                          Exceção de estoque: {reservation.stockOverrideReason ?? "Sem observação."}
                         </p>
                       ) : null}
                     </div>
                     <div className="flex items-center gap-3">
                       <Badge
                         tone={reservation.status === "Active" ? "success" : "neutral"}
-                        label={reservation.status}
+                        label={getReservationStatusLabel(reservation.status)}
                       />
                       {reservation.isStockOverride ? (
-                        <Badge tone="warning" label="Override" />
+                        <Badge tone="warning" label="Exceção" />
                       ) : null}
                       {reservation.status === "Active" ? (
                         <Button
@@ -319,7 +320,7 @@ export default function KitDetailPage() {
                 Kit em uso
               </h2>
               <p className="mt-2 text-sm text-white/60">
-                Ha reservas ativas. Mantenha o planejamento de retirada e devolucao atualizado.
+                Há reservas ativas. Mantenha o planejamento de retirada e devolução atualizado.
               </p>
             </Card>
           ) : null}
