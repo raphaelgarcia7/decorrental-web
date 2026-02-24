@@ -28,6 +28,8 @@ export type Reservation = {
   startDate: string;
   endDate: string;
   status: string;
+  isStockOverride: boolean;
+  stockOverrideReason?: string | null;
 };
 
 export type KitDetail = {
@@ -67,6 +69,8 @@ export type ReserveResponse = {
   startDate: string;
   endDate: string;
   status: string;
+  isStockOverride: boolean;
+  stockOverrideReason?: string | null;
   message: string;
 };
 

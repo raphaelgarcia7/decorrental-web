@@ -20,12 +20,15 @@ export default function KitDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const kitId = params?.id ?? "";
+
   const [kitName, setKitName] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [allowStockOverride, setAllowStockOverride] = useState(false);
+  const [stockOverrideReason, setStockOverrideReason] = useState("");
   const [loading, setLoading] = useState(true);
   const [reserving, setReserving] = useState(false);
   const [cancellingReservationId, setCancellingReservationId] = useState<string | null>(null);
@@ -44,6 +47,7 @@ export default function KitDetailPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
+
     try {
       const [kit, loadedCategories] = await Promise.all([getKit(kitId), getCategories()]);
       setKitName(kit.name);
@@ -51,15 +55,13 @@ export default function KitDetailPage() {
       setCategories(loadedCategories);
 
       if (loadedCategories.length > 0) {
-        setSelectedCategoryId((currentCategoryId) =>
-          currentCategoryId || loadedCategories[0].id
-        );
+        setSelectedCategoryId((currentCategoryId) => currentCategoryId || loadedCategories[0].id);
       }
     } catch (requestError) {
       setError(
         requestError instanceof ApiError
           ? requestError.details?.detail ?? requestError.message
-          : "Não foi possível carregar os detalhes do kit."
+          : "Nao foi possivel carregar os detalhes do kit."
       );
     } finally {
       setLoading(false);
@@ -86,24 +88,45 @@ export default function KitDetailPage() {
     }
 
     if (!startDate || !endDate) {
-      setFeedbackMessage("Informe as datas de início e fim.");
+      setFeedbackMessage("Informe as datas de inicio e fim.");
+      return;
+    }
+
+    const normalizedReason = stockOverrideReason.trim();
+    if (allowStockOverride && !normalizedReason) {
+      setFeedbackMessage("Informe a observacao do override de estoque.");
       return;
     }
 
     setReserving(true);
     setError(null);
     setFeedbackMessage(null);
+
     try {
-      const response = await reserveKit(kitId, selectedCategoryId, startDate, endDate);
-      setFeedbackMessage(response.message);
+      const response = await reserveKit(kitId, {
+        kitCategoryId: selectedCategoryId,
+        startDate,
+        endDate,
+        allowStockOverride,
+        stockOverrideReason: allowStockOverride ? normalizedReason : undefined,
+      });
+
+      setFeedbackMessage(
+        response.isStockOverride
+          ? `${response.message} Override de estoque aplicado.`
+          : response.message
+      );
+
       setStartDate("");
       setEndDate("");
+      setAllowStockOverride(false);
+      setStockOverrideReason("");
       await loadData();
     } catch (requestError) {
       setFeedbackMessage(
         requestError instanceof ApiError
           ? requestError.details?.detail ?? requestError.message
-          : "Não foi possível criar a reserva."
+          : "Nao foi possivel criar a reserva."
       );
     } finally {
       setReserving(false);
@@ -114,6 +137,7 @@ export default function KitDetailPage() {
     setCancellingReservationId(reservationId);
     setError(null);
     setFeedbackMessage(null);
+
     try {
       const response = await cancelReservation(kitId, reservationId);
       setFeedbackMessage(response.message);
@@ -122,7 +146,7 @@ export default function KitDetailPage() {
       setFeedbackMessage(
         requestError instanceof ApiError
           ? requestError.details?.detail ?? requestError.message
-          : "Não foi possível cancelar a reserva."
+          : "Nao foi possivel cancelar a reserva."
       );
     } finally {
       setCancellingReservationId(null);
@@ -150,7 +174,7 @@ export default function KitDetailPage() {
           <Skeleton className="h-16 w-full rounded-2xl" />
         </div>
       ) : error ? (
-        <EmptyState title="Kit não encontrado" description="Volte para a lista e selecione outro kit." />
+        <EmptyState title="Kit nao encontrado" description="Volte para a lista e selecione outro kit." />
       ) : (
         <>
           <Card>
@@ -171,7 +195,7 @@ export default function KitDetailPage() {
                 ))}
               </Select>
               <Input
-                label="Início"
+                label="Inicio"
                 type="date"
                 value={startDate}
                 onChange={(event) => setStartDate(event.target.value)}
@@ -182,17 +206,43 @@ export default function KitDetailPage() {
                 value={endDate}
                 onChange={(event) => setEndDate(event.target.value)}
               />
-              <Button onClick={handleReserve} size="md" className="h-[52px] self-end" disabled={reserving}>
+              <Button onClick={handleReserve} size="md" className="h-[48px] self-end" disabled={reserving}>
                 {reserving ? "Reservando..." : "Reservar"}
               </Button>
             </div>
 
+            <div className="mt-4 rounded-2xl border border-[var(--border)] bg-[var(--surface-2)]/50 p-4">
+              <label className="flex cursor-pointer items-center gap-3 text-sm text-white/90">
+                <input
+                  type="checkbox"
+                  checked={allowStockOverride}
+                  onChange={(event) => setAllowStockOverride(event.target.checked)}
+                  className="h-4 w-4 rounded border-[var(--border)] bg-[var(--surface)]"
+                />
+                Permitir reserva com override de estoque
+              </label>
+              <p className="mt-2 text-xs text-white/60">
+                Use apenas quando houver aprovacao operacional para reservar mesmo com falta de itens.
+              </p>
+
+              {allowStockOverride ? (
+                <label className="mt-3 flex flex-col gap-2 text-sm text-white/80">
+                  <span className="text-xs uppercase tracking-[0.2em]">Observacao da excecao</span>
+                  <textarea
+                    value={stockOverrideReason}
+                    onChange={(event) => setStockOverrideReason(event.target.value)}
+                    rows={3}
+                    maxLength={500}
+                    placeholder="Explique o motivo da excecao de estoque."
+                    className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-white placeholder:text-white/30 focus:border-[var(--accent)] focus:outline-none"
+                  />
+                </label>
+              ) : null}
+            </div>
+
             {categories.length === 0 ? (
               <div className="mt-4">
-                <Alert
-                  tone="info"
-                  message="Cadastre categorias primeiro em Catálogo > Categorias."
-                />
+                <Alert tone="info" message="Cadastre categorias antes de reservar este kit." />
               </div>
             ) : null}
 
@@ -215,7 +265,7 @@ export default function KitDetailPage() {
               <div className="mt-6">
                 <EmptyState
                   title="Nenhuma reserva ainda"
-                  description="Use o formulário acima para reservar este kit."
+                  description="Use o formulario acima para reservar este kit."
                 />
               </div>
             ) : (
@@ -232,12 +282,20 @@ export default function KitDetailPage() {
                       <p className="text-xs text-white/50">
                         Categoria: {categoryById[reservation.kitCategoryId] ?? reservation.kitCategoryId}
                       </p>
+                      {reservation.isStockOverride ? (
+                        <p className="mt-1 text-xs text-amber-200">
+                          Override de estoque: {reservation.stockOverrideReason ?? "Sem observacao."}
+                        </p>
+                      ) : null}
                     </div>
                     <div className="flex items-center gap-3">
                       <Badge
                         tone={reservation.status === "Active" ? "success" : "neutral"}
                         label={reservation.status}
                       />
+                      {reservation.isStockOverride ? (
+                        <Badge tone="warning" label="Override" />
+                      ) : null}
                       {reservation.status === "Active" ? (
                         <Button
                           variant="secondary"
@@ -261,7 +319,7 @@ export default function KitDetailPage() {
                 Kit em uso
               </h2>
               <p className="mt-2 text-sm text-white/60">
-                Há reservas ativas. Mantenha o planejamento de retirada e devolução atualizado.
+                Ha reservas ativas. Mantenha o planejamento de retirada e devolucao atualizado.
               </p>
             </Card>
           ) : null}

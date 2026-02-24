@@ -104,14 +104,18 @@ export const getKitReservations = async (id: string): Promise<Reservation[]> =>
 
 export const reserveKit = async (
   kitId: string,
-  kitCategoryId: string,
-  startDate: string,
-  endDate: string
+  payload: {
+    kitCategoryId: string;
+    startDate: string;
+    endDate: string;
+    allowStockOverride?: boolean;
+    stockOverrideReason?: string;
+  }
 ): Promise<ReserveResponse> =>
   request<ReserveResponse>(`/api/kits/${kitId}/reservations`, {
     method: "POST",
     headers: getAuthHeaders(),
-    body: JSON.stringify({ kitCategoryId, startDate, endDate }),
+    body: JSON.stringify(payload),
   });
 
 export const cancelReservation = async (
