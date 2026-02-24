@@ -24,9 +24,12 @@ export type KitSummary = {
 
 export type Reservation = {
   id: string;
+  kitCategoryId: string;
   startDate: string;
   endDate: string;
   status: string;
+  isStockOverride: boolean;
+  stockOverrideReason?: string | null;
 };
 
 export type KitDetail = {
@@ -42,18 +45,38 @@ export type PagedResponse<T> = {
   totalCount: number;
 };
 
+export type ItemType = {
+  id: string;
+  name: string;
+  totalStock: number;
+};
+
+export type CategoryItem = {
+  itemTypeId: string;
+  quantity: number;
+};
+
+export type Category = {
+  id: string;
+  name: string;
+  items: CategoryItem[];
+};
+
 export type ReserveResponse = {
   reservationId: string;
-  kitId: string;
+  kitThemeId: string;
+  kitCategoryId: string;
   startDate: string;
   endDate: string;
   status: string;
+  isStockOverride: boolean;
+  stockOverrideReason?: string | null;
   message: string;
 };
 
 export type CancelResponse = {
   reservationId: string;
-  kitId: string;
+  kitThemeId: string;
   status: string;
   message: string;
 };

@@ -2,15 +2,16 @@
 
 :root {
   color-scheme: dark;
-  --background: #0b0f14;
-  --foreground: #f5f7fb;
-  --surface: #131a26;
-  --surface-2: #1a2434;
-  --muted: #a9b4c7;
-  --accent: #ffb347;
-  --accent-2: #4cc9f0;
-  --border: #263044;
-  --success: #37d996;
+  --background: #0b111b;
+  --foreground: #f6f8fc;
+  --surface: #121a24;
+  --surface-2: #182233;
+  --muted: #9fb0c7;
+  --accent: #4f8cff;
+  --accent-2: #33c3f0;
+  --warning: #f7b955;
+  --border: #223149;
+  --success: #3ddc97;
   --danger: #ff6b6b;
 }
 
@@ -27,9 +28,9 @@
 
 body {
   min-height: 100vh;
-  background: radial-gradient(1200px 600px at 20% 10%, rgba(76, 201, 240, 0.15), transparent 60%),
-    radial-gradient(900px 500px at 90% -10%, rgba(255, 179, 71, 0.18), transparent 60%),
-    #0b0f14;
+  background: radial-gradient(1100px 600px at 15% -10%, rgba(51, 195, 240, 0.18), transparent 65%),
+    radial-gradient(900px 500px at 85% 0%, rgba(79, 140, 255, 0.14), transparent 60%),
+    #0b111b;
   color: var(--foreground);
   font-family: var(--font-body), system-ui, -apple-system, sans-serif;
 }
@@ -39,5 +40,5 @@ main {
 }
 
 ::selection {
-  background: rgba(255, 179, 71, 0.35);
+  background: rgba(79, 140, 255, 0.35);
 }

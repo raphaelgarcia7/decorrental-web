@@ -6,9 +6,12 @@ import { StatCard } from "@/components/StatCard";
 import { Card } from "@/components/Card";
 import { Badge } from "@/components/Badge";
 import { EmptyState } from "@/components/EmptyState";
+import { Alert } from "@/components/Alert";
+import { Skeleton } from "@/components/Skeleton";
 import { getKits, getKit } from "@/lib/api";
 import { useAuthGuard } from "@/lib/useAuthGuard";
 import { formatDate } from "@/lib/date";
+import { getReservationStatusLabel } from "@/lib/reservationLabels";
 
 const MAX_UPCOMING = 6;
 
@@ -24,6 +27,7 @@ export default function DashboardPage() {
   const [kitsCount, setKitsCount] = useState(0);
   const [upcoming, setUpcoming] = useState<UpcomingReservation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!ready) {
@@ -32,6 +36,7 @@ export default function DashboardPage() {
 
     const load = async () => {
       setLoading(true);
+      setError(null);
       try {
         const kitsResponse = await getKits(1, 20);
         setKitsCount(kitsResponse.totalCount);
@@ -57,6 +62,8 @@ export default function DashboardPage() {
           .slice(0, MAX_UPCOMING);
 
         setUpcoming(sorted);
+      } catch {
+        setError("Não foi possível carregar o dashboard.");
       } finally {
         setLoading(false);
       }
@@ -81,9 +88,11 @@ export default function DashboardPage() {
 
       <section className="grid gap-6 md:grid-cols-3">
         <StatCard label="Kits cadastrados" value={kitsCount} helper="Total na base" />
-        <StatCard label="Reservas ativas" value={upcoming.length} helper="Proximos dias" />
-        <StatCard label="Status" value={occupancyLabel} helper="Resumo rapido" />
+        <StatCard label="Reservas ativas" value={upcoming.length} helper="Próximos dias" />
+        <StatCard label="Status" value={occupancyLabel} helper="Resumo r?pido" />
       </section>
+
+      {error ? <Alert tone="error" message={error} /> : null}
 
       <Card tone="highlight">
         <div className="flex items-center justify-between">
@@ -92,17 +101,21 @@ export default function DashboardPage() {
               className="text-xl font-semibold text-white"
               style={{ fontFamily: "var(--font-heading)" }}
             >
-              Proximas reservas
+              Próximas reservas
             </h2>
             <p className="mt-1 text-sm text-white/60">
-              Visualizacao rapida das reservas ativas para preparar a operacao.
+              Visualização rápida das reservas ativas para preparar a operação.
             </p>
           </div>
           <Badge tone="neutral" label={loading ? "Atualizando" : "Hoje"} />
         </div>
 
         {loading ? (
-          <p className="mt-6 text-sm text-white/50">Carregando reservas...</p>
+          <div className="mt-6 space-y-3">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-14 w-full rounded-2xl" />
+            <Skeleton className="h-14 w-full rounded-2xl" />
+          </div>
         ) : upcoming.length === 0 ? (
           <div className="mt-6">
             <EmptyState
@@ -120,10 +133,10 @@ export default function DashboardPage() {
                 <div>
                   <p className="text-sm font-semibold text-white">{reservation.kitName}</p>
                   <p className="text-xs text-white/60">
-                    {formatDate(reservation.startDate)} ate {formatDate(reservation.endDate)}
+                    {formatDate(reservation.startDate)} at? {formatDate(reservation.endDate)}
                   </p>
                 </div>
-                <Badge tone="success" label={reservation.status} />
+                <Badge tone="success" label={getReservationStatusLabel(reservation.status)} />
               </div>
             ))}
           </div>
