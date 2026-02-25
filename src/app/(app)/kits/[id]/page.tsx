@@ -114,7 +114,7 @@ export default function KitDetailPage() {
 
       setFeedbackMessage(
         response.isStockOverride
-          ? `${response.message} Exce??o de estoque aplicada.`
+          ? `${response.message} Exceção de estoque aplicada.`
           : response.message
       );
 

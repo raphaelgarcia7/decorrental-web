@@ -58,7 +58,9 @@ export default function DashboardPage() {
 
         const sorted = reservations
           .filter((reservation) => reservation.status === "Active")
-          .sort((a, b) => a.startDate.localeCompare(b.startDate))
+          .sort((currentReservation, nextReservation) =>
+            currentReservation.startDate.localeCompare(nextReservation.startDate)
+          )
           .slice(0, MAX_UPCOMING);
 
         setUpcoming(sorted);
@@ -76,9 +78,11 @@ export default function DashboardPage() {
     if (kitsCount === 0) {
       return "Sem kits cadastrados";
     }
+
     if (upcoming.length === 0) {
       return "Nenhuma reserva ativa";
     }
+
     return `${upcoming.length} reservas ativas`;
   }, [kitsCount, upcoming]);
 
@@ -89,7 +93,7 @@ export default function DashboardPage() {
       <section className="grid gap-6 md:grid-cols-3">
         <StatCard label="Kits cadastrados" value={kitsCount} helper="Total na base" />
         <StatCard label="Reservas ativas" value={upcoming.length} helper="Próximos dias" />
-        <StatCard label="Status" value={occupancyLabel} helper="Resumo r?pido" />
+        <StatCard label="Status" value={occupancyLabel} helper="Resumo rápido" />
       </section>
 
       {error ? <Alert tone="error" message={error} /> : null}
@@ -133,7 +137,7 @@ export default function DashboardPage() {
                 <div>
                   <p className="text-sm font-semibold text-white">{reservation.kitName}</p>
                   <p className="text-xs text-white/60">
-                    {formatDate(reservation.startDate)} at? {formatDate(reservation.endDate)}
+                    {formatDate(reservation.startDate)} até {formatDate(reservation.endDate)}
                   </p>
                 </div>
                 <Badge tone="success" label={getReservationStatusLabel(reservation.status)} />

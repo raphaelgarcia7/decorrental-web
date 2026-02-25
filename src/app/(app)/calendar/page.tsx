@@ -183,7 +183,7 @@ export default function CalendarPage() {
           Calendário de reservas
         </h1>
         <p className="text-sm text-white/60">
-          Visualize rapidamente os kits em uso e os pr?ximos per?odos.
+          Visualize rapidamente os kits em uso e os próximos períodos.
         </p>
       </div>
 
