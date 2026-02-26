@@ -4,9 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cx } from "@/lib/classNames";
 
-const navItems = [
+const navigationItems = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/kits", label: "Kits" },
+  { href: "/reservations", label: "Reservas" },
   { href: "/catalog/item-types", label: "Itens de estoque" },
   { href: "/catalog/categories", label: "Categorias" },
   { href: "/calendar", label: "Calendário" },
@@ -31,20 +32,20 @@ export const Sidebar = () => {
       </div>
 
       <nav className="flex flex-col gap-2">
-        {navItems.map((item) => {
-          const active = pathname.startsWith(item.href);
+        {navigationItems.map((navigationItem) => {
+          const isActive = pathname.startsWith(navigationItem.href);
           return (
             <Link
-              key={item.href}
-              href={item.href}
+              key={navigationItem.href}
+              href={navigationItem.href}
               className={cx(
                 "rounded-xl px-4 py-3 text-sm font-medium transition",
-                active
+                isActive
                   ? "bg-white/10 text-white"
                   : "text-white/60 hover:bg-white/5 hover:text-white"
               )}
             >
-              {item.label}
+              {navigationItem.label}
             </Link>
           );
         })}
