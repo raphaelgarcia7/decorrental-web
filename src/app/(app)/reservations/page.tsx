@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -23,6 +23,8 @@ import { getReservationStatusLabel } from "@/lib/reservationLabels";
 import { useAuthGuard } from "@/lib/useAuthGuard";
 import type { Category, KitSummary, Reservation } from "@/lib/types";
 
+const DEFAULT_ERROR_MESSAGE = "Não foi possível carregar os dados de reservas.";
+
 export default function ReservationsPage() {
   const ready = useAuthGuard();
 
@@ -31,14 +33,23 @@ export default function ReservationsPage() {
   const [selectedKitId, setSelectedKitId] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
   const [reservations, setReservations] = useState<Reservation[]>([]);
+
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [customerName, setCustomerName] = useState("");
+  const [customerDocumentNumber, setCustomerDocumentNumber] = useState("");
+  const [customerAddress, setCustomerAddress] = useState("");
+  const [notes, setNotes] = useState("");
+  const [hasBalloonArch, setHasBalloonArch] = useState(false);
+
   const [allowStockException, setAllowStockException] = useState(false);
   const [stockExceptionReason, setStockExceptionReason] = useState("");
+
   const [loading, setLoading] = useState(true);
   const [loadingReservations, setLoadingReservations] = useState(false);
   const [creatingReservation, setCreatingReservation] = useState(false);
   const [cancellingReservationId, setCancellingReservationId] = useState<string | null>(null);
+
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -61,6 +72,18 @@ export default function ReservationsPage() {
   );
 
   const selectedKitName = selectedKitId ? kitById[selectedKitId] : "";
+
+  const clearForm = () => {
+    setStartDate("");
+    setEndDate("");
+    setCustomerName("");
+    setCustomerDocumentNumber("");
+    setCustomerAddress("");
+    setNotes("");
+    setHasBalloonArch(false);
+    setAllowStockException(false);
+    setStockExceptionReason("");
+  };
 
   const loadReservations = useCallback(async (kitId: string) => {
     if (!kitId) {
@@ -106,7 +129,7 @@ export default function ReservationsPage() {
       setError(
         requestError instanceof ApiError
           ? requestError.details?.detail ?? requestError.message
-          : "Não foi possível carregar os dados de reservas."
+          : DEFAULT_ERROR_MESSAGE
       );
     } finally {
       setLoading(false);
@@ -145,6 +168,24 @@ export default function ReservationsPage() {
       return;
     }
 
+    const normalizedCustomerName = customerName.trim();
+    if (!normalizedCustomerName) {
+      setFeedbackMessage("Informe o nome do cliente.");
+      return;
+    }
+
+    const normalizedDocumentNumber = customerDocumentNumber.trim();
+    if (!normalizedDocumentNumber) {
+      setFeedbackMessage("Informe o número do documento.");
+      return;
+    }
+
+    const normalizedAddress = customerAddress.trim();
+    if (!normalizedAddress) {
+      setFeedbackMessage("Informe o endereço do cliente.");
+      return;
+    }
+
     const normalizedReason = stockExceptionReason.trim();
     if (allowStockException && !normalizedReason) {
       setFeedbackMessage("Informe a observação da exceção de estoque.");
@@ -162,6 +203,11 @@ export default function ReservationsPage() {
         endDate,
         allowStockOverride: allowStockException,
         stockOverrideReason: allowStockException ? normalizedReason : undefined,
+        customerName: normalizedCustomerName,
+        customerDocumentNumber: normalizedDocumentNumber,
+        customerAddress: normalizedAddress,
+        notes: notes.trim() || undefined,
+        hasBalloonArch,
       });
 
       setFeedbackMessage(
@@ -170,10 +216,7 @@ export default function ReservationsPage() {
           : response.message
       );
 
-      setStartDate("");
-      setEndDate("");
-      setAllowStockException(false);
-      setStockExceptionReason("");
+      clearForm();
       await loadReservations(selectedKitId);
     } catch (requestError) {
       setFeedbackMessage(
@@ -218,7 +261,7 @@ export default function ReservationsPage() {
           Gestão de reservas
         </h1>
         <p className="text-sm text-white/60">
-          Selecione kit, categoria e período para criar reservas sem precisar abrir os detalhes do kit.
+          Selecione kit, categoria e dados do cliente para criar reservas com rastreabilidade completa.
         </p>
       </div>
 
@@ -286,6 +329,55 @@ export default function ReservationsPage() {
               >
                 {creatingReservation ? "Reservando..." : "Reservar"}
               </Button>
+            </div>
+
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <Input
+                label="Nome do cliente"
+                value={customerName}
+                onChange={(event) => setCustomerName(event.target.value)}
+                maxLength={120}
+                placeholder="Ex.: Maria Santos"
+              />
+
+              <Input
+                label="Documento"
+                value={customerDocumentNumber}
+                onChange={(event) => setCustomerDocumentNumber(event.target.value)}
+                maxLength={40}
+                placeholder="CPF/CNPJ"
+              />
+
+              <Input
+                label="Endereço"
+                value={customerAddress}
+                onChange={(event) => setCustomerAddress(event.target.value)}
+                maxLength={250}
+                placeholder="Rua, número, bairro"
+                className="md:col-span-2"
+              />
+
+              <label className="md:col-span-2 flex flex-col gap-2 text-sm text-white/80">
+                <span className="text-xs uppercase tracking-[0.2em]">Observações</span>
+                <textarea
+                  value={notes}
+                  onChange={(event) => setNotes(event.target.value)}
+                  rows={3}
+                  maxLength={500}
+                  placeholder="Informações adicionais da montagem, entrega ou cliente."
+                  className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-white placeholder:text-white/30 focus:border-[var(--accent)] focus:outline-none"
+                />
+              </label>
+
+              <label className="md:col-span-2 flex cursor-pointer items-center gap-3 text-sm text-white/90">
+                <input
+                  type="checkbox"
+                  checked={hasBalloonArch}
+                  onChange={(event) => setHasBalloonArch(event.target.checked)}
+                  className="h-4 w-4 rounded border-[var(--border)] bg-[var(--surface)]"
+                />
+                Inclui arco de balões
+              </label>
             </div>
 
             <div className="mt-4 rounded-2xl border border-[var(--border)] bg-[var(--surface-2)]/50 p-4">
@@ -382,6 +474,15 @@ export default function ReservationsPage() {
                       <p className="text-xs text-white/50">
                         Categoria: {categoryById[reservation.kitCategoryId] ?? reservation.kitCategoryId}
                       </p>
+                      <p className="text-xs text-white/50">Cliente: {reservation.customerName}</p>
+                      <p className="text-xs text-white/50">Documento: {reservation.customerDocumentNumber}</p>
+                      <p className="text-xs text-white/50">Endereço: {reservation.customerAddress}</p>
+                      <p className="text-xs text-white/50">
+                        Arco de balões: {reservation.hasBalloonArch ? "Sim" : "Não"}
+                      </p>
+                      {reservation.notes ? (
+                        <p className="mt-1 text-xs text-white/60">Observações: {reservation.notes}</p>
+                      ) : null}
                       {reservation.isStockOverride ? (
                         <p className="mt-1 text-xs text-amber-200">
                           Exceção de estoque: {reservation.stockOverrideReason ?? "Sem observação."}

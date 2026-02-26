@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -26,10 +26,18 @@ export default function KitDetailPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
   const [reservations, setReservations] = useState<Reservation[]>([]);
+
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [customerName, setCustomerName] = useState("");
+  const [customerDocumentNumber, setCustomerDocumentNumber] = useState("");
+  const [customerAddress, setCustomerAddress] = useState("");
+  const [notes, setNotes] = useState("");
+  const [hasBalloonArch, setHasBalloonArch] = useState(false);
+
   const [allowStockOverride, setAllowStockOverride] = useState(false);
   const [stockOverrideReason, setStockOverrideReason] = useState("");
+
   const [loading, setLoading] = useState(true);
   const [reserving, setReserving] = useState(false);
   const [cancellingReservationId, setCancellingReservationId] = useState<string | null>(null);
@@ -44,6 +52,18 @@ export default function KitDetailPage() {
       }, {}),
     [categories]
   );
+
+  const clearForm = () => {
+    setStartDate("");
+    setEndDate("");
+    setCustomerName("");
+    setCustomerDocumentNumber("");
+    setCustomerAddress("");
+    setNotes("");
+    setHasBalloonArch(false);
+    setAllowStockOverride(false);
+    setStockOverrideReason("");
+  };
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -93,6 +113,24 @@ export default function KitDetailPage() {
       return;
     }
 
+    const normalizedCustomerName = customerName.trim();
+    if (!normalizedCustomerName) {
+      setFeedbackMessage("Informe o nome do cliente.");
+      return;
+    }
+
+    const normalizedDocumentNumber = customerDocumentNumber.trim();
+    if (!normalizedDocumentNumber) {
+      setFeedbackMessage("Informe o número do documento.");
+      return;
+    }
+
+    const normalizedAddress = customerAddress.trim();
+    if (!normalizedAddress) {
+      setFeedbackMessage("Informe o endereço do cliente.");
+      return;
+    }
+
     const normalizedReason = stockOverrideReason.trim();
     if (allowStockOverride && !normalizedReason) {
       setFeedbackMessage("Informe a observação da exceção de estoque.");
@@ -110,6 +148,11 @@ export default function KitDetailPage() {
         endDate,
         allowStockOverride,
         stockOverrideReason: allowStockOverride ? normalizedReason : undefined,
+        customerName: normalizedCustomerName,
+        customerDocumentNumber: normalizedDocumentNumber,
+        customerAddress: normalizedAddress,
+        notes: notes.trim() || undefined,
+        hasBalloonArch,
       });
 
       setFeedbackMessage(
@@ -118,10 +161,7 @@ export default function KitDetailPage() {
           : response.message
       );
 
-      setStartDate("");
-      setEndDate("");
-      setAllowStockOverride(false);
-      setStockOverrideReason("");
+      clearForm();
       await loadData();
     } catch (requestError) {
       setFeedbackMessage(
@@ -212,6 +252,55 @@ export default function KitDetailPage() {
               </Button>
             </div>
 
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <Input
+                label="Nome do cliente"
+                value={customerName}
+                onChange={(event) => setCustomerName(event.target.value)}
+                maxLength={120}
+                placeholder="Ex.: Maria Santos"
+              />
+
+              <Input
+                label="Documento"
+                value={customerDocumentNumber}
+                onChange={(event) => setCustomerDocumentNumber(event.target.value)}
+                maxLength={40}
+                placeholder="CPF/CNPJ"
+              />
+
+              <Input
+                label="Endereço"
+                value={customerAddress}
+                onChange={(event) => setCustomerAddress(event.target.value)}
+                maxLength={250}
+                placeholder="Rua, número, bairro"
+                className="md:col-span-2"
+              />
+
+              <label className="md:col-span-2 flex flex-col gap-2 text-sm text-white/80">
+                <span className="text-xs uppercase tracking-[0.2em]">Observações</span>
+                <textarea
+                  value={notes}
+                  onChange={(event) => setNotes(event.target.value)}
+                  rows={3}
+                  maxLength={500}
+                  placeholder="Informações adicionais da montagem, entrega ou cliente."
+                  className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-white placeholder:text-white/30 focus:border-[var(--accent)] focus:outline-none"
+                />
+              </label>
+
+              <label className="md:col-span-2 flex cursor-pointer items-center gap-3 text-sm text-white/90">
+                <input
+                  type="checkbox"
+                  checked={hasBalloonArch}
+                  onChange={(event) => setHasBalloonArch(event.target.checked)}
+                  className="h-4 w-4 rounded border-[var(--border)] bg-[var(--surface)]"
+                />
+                Inclui arco de balões
+              </label>
+            </div>
+
             <div className="mt-4 rounded-2xl border border-[var(--border)] bg-[var(--surface-2)]/50 p-4">
               <label className="flex cursor-pointer items-center gap-3 text-sm text-white/90">
                 <input
@@ -283,6 +372,15 @@ export default function KitDetailPage() {
                       <p className="text-xs text-white/50">
                         Categoria: {categoryById[reservation.kitCategoryId] ?? reservation.kitCategoryId}
                       </p>
+                      <p className="text-xs text-white/50">Cliente: {reservation.customerName}</p>
+                      <p className="text-xs text-white/50">Documento: {reservation.customerDocumentNumber}</p>
+                      <p className="text-xs text-white/50">Endereço: {reservation.customerAddress}</p>
+                      <p className="text-xs text-white/50">
+                        Arco de balões: {reservation.hasBalloonArch ? "Sim" : "Não"}
+                      </p>
+                      {reservation.notes ? (
+                        <p className="mt-1 text-xs text-white/60">Observações: {reservation.notes}</p>
+                      ) : null}
                       {reservation.isStockOverride ? (
                         <p className="mt-1 text-xs text-amber-200">
                           Exceção de estoque: {reservation.stockOverrideReason ?? "Sem observação."}
@@ -294,9 +392,7 @@ export default function KitDetailPage() {
                         tone={reservation.status === "Active" ? "success" : "neutral"}
                         label={getReservationStatusLabel(reservation.status)}
                       />
-                      {reservation.isStockOverride ? (
-                        <Badge tone="warning" label="Exceção" />
-                      ) : null}
+                      {reservation.isStockOverride ? <Badge tone="warning" label="Exceção" /> : null}
                       {reservation.status === "Active" ? (
                         <Button
                           variant="secondary"
