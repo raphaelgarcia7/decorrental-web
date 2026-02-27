@@ -110,6 +110,11 @@ export const reserveKit = async (
     endDate: string;
     allowStockOverride?: boolean;
     stockOverrideReason?: string;
+    customerName: string;
+    customerDocumentNumber: string;
+    customerAddress: string;
+    notes?: string;
+    hasBalloonArch: boolean;
   }
 ): Promise<ReserveResponse> =>
   request<ReserveResponse>(`/api/kits/${kitId}/reservations`, {
