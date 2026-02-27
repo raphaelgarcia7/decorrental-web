@@ -368,31 +368,40 @@ export default function ReservationsPage() {
                   className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm text-white placeholder:text-white/30 focus:border-[var(--accent)] focus:outline-none"
                 />
               </label>
+            </div>
 
-              <label className="md:col-span-2 flex cursor-pointer items-center gap-3 text-sm text-white/90">
+            <div className="mt-4 rounded-2xl border border-[var(--border)] bg-[var(--surface-2)]/50 p-4">
+              <label className="flex cursor-pointer items-start gap-3 text-sm text-white/90">
                 <input
                   type="checkbox"
                   checked={hasBalloonArch}
                   onChange={(event) => setHasBalloonArch(event.target.checked)}
-                  className="h-4 w-4 rounded border-[var(--border)] bg-[var(--surface)]"
+                  className="mt-0.5 h-4 w-4 rounded border-[var(--border)] bg-[var(--surface)]"
                 />
-                Inclui arco de balões
+                <span className="flex flex-col gap-1">
+                  <span>Inclui arco de balões</span>
+                  <span className="text-xs text-white/60">
+                    Marque quando a montagem da reserva precisar de arco de balões.
+                  </span>
+                </span>
               </label>
-            </div>
 
-            <div className="mt-4 rounded-2xl border border-[var(--border)] bg-[var(--surface-2)]/50 p-4">
-              <label className="flex cursor-pointer items-center gap-3 text-sm text-white/90">
+              <div className="my-4 h-px bg-white/10" />
+
+              <label className="flex cursor-pointer items-start gap-3 text-sm text-white/90">
                 <input
                   type="checkbox"
                   checked={allowStockException}
                   onChange={(event) => setAllowStockException(event.target.checked)}
-                  className="h-4 w-4 rounded border-[var(--border)] bg-[var(--surface)]"
+                  className="mt-0.5 h-4 w-4 rounded border-[var(--border)] bg-[var(--surface)]"
                 />
-                Permitir reserva fora da disponibilidade de estoque
+                <span className="flex flex-col gap-1">
+                  <span>Permitir reserva fora da disponibilidade de estoque</span>
+                  <span className="text-xs text-white/60">
+                    Use apenas quando houver aprovação operacional para reservar com falta de itens no período.
+                  </span>
+                </span>
               </label>
-              <p className="mt-2 text-xs text-white/60">
-                Use apenas quando houver aprovação operacional para reservar com falta de itens no período.
-              </p>
 
               {allowStockException ? (
                 <label className="mt-3 flex flex-col gap-2 text-sm text-white/80">
