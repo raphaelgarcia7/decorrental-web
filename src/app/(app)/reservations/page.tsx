@@ -38,9 +38,11 @@ export default function ReservationsPage() {
   const [endDate, setEndDate] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [customerDocumentNumber, setCustomerDocumentNumber] = useState("");
+  const [customerPhoneNumber, setCustomerPhoneNumber] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
   const [notes, setNotes] = useState("");
   const [hasBalloonArch, setHasBalloonArch] = useState(false);
+  const [isEntryPaid, setIsEntryPaid] = useState(false);
 
   const [allowStockException, setAllowStockException] = useState(false);
   const [stockExceptionReason, setStockExceptionReason] = useState("");
@@ -78,9 +80,11 @@ export default function ReservationsPage() {
     setEndDate("");
     setCustomerName("");
     setCustomerDocumentNumber("");
+    setCustomerPhoneNumber("");
     setCustomerAddress("");
     setNotes("");
     setHasBalloonArch(false);
+    setIsEntryPaid(false);
     setAllowStockException(false);
     setStockExceptionReason("");
   };
@@ -180,6 +184,12 @@ export default function ReservationsPage() {
       return;
     }
 
+    const normalizedPhoneNumber = customerPhoneNumber.trim();
+    if (!normalizedPhoneNumber) {
+      setFeedbackMessage("Informe o telefone do cliente.");
+      return;
+    }
+
     const normalizedAddress = customerAddress.trim();
     if (!normalizedAddress) {
       setFeedbackMessage("Informe o endereço do cliente.");
@@ -205,9 +215,11 @@ export default function ReservationsPage() {
         stockOverrideReason: allowStockException ? normalizedReason : undefined,
         customerName: normalizedCustomerName,
         customerDocumentNumber: normalizedDocumentNumber,
+        customerPhoneNumber: normalizedPhoneNumber,
         customerAddress: normalizedAddress,
         notes: notes.trim() || undefined,
         hasBalloonArch,
+        isEntryPaid,
       });
 
       setFeedbackMessage(
@@ -349,6 +361,14 @@ export default function ReservationsPage() {
               />
 
               <Input
+                label="Telefone"
+                value={customerPhoneNumber}
+                onChange={(event) => setCustomerPhoneNumber(event.target.value)}
+                maxLength={30}
+                placeholder="(11) 99999-9999"
+              />
+
+              <Input
                 label="Endereço"
                 value={customerAddress}
                 onChange={(event) => setCustomerAddress(event.target.value)}
@@ -382,6 +402,23 @@ export default function ReservationsPage() {
                   <span>Inclui arco de balões</span>
                   <span className="text-xs text-white/60">
                     Marque quando a montagem da reserva precisar de arco de balões.
+                  </span>
+                </span>
+              </label>
+
+              <div className="my-4 h-px bg-white/10" />
+
+              <label className="flex cursor-pointer items-start gap-3 text-sm text-white/90">
+                <input
+                  type="checkbox"
+                  checked={isEntryPaid}
+                  onChange={(event) => setIsEntryPaid(event.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded border-[var(--border)] bg-[var(--surface)]"
+                />
+                <span className="flex flex-col gap-1">
+                  <span>Valor de entrada pago</span>
+                  <span className="text-xs text-white/60">
+                    Marque quando o sinal da reserva já tiver sido pago.
                   </span>
                 </span>
               </label>
@@ -485,9 +522,13 @@ export default function ReservationsPage() {
                       </p>
                       <p className="text-xs text-white/50">Cliente: {reservation.customerName}</p>
                       <p className="text-xs text-white/50">Documento: {reservation.customerDocumentNumber}</p>
+                      <p className="text-xs text-white/50">Telefone: {reservation.customerPhoneNumber}</p>
                       <p className="text-xs text-white/50">Endereço: {reservation.customerAddress}</p>
                       <p className="text-xs text-white/50">
                         Arco de balões: {reservation.hasBalloonArch ? "Sim" : "Não"}
+                      </p>
+                      <p className="text-xs text-white/50">
+                        Entrada paga: {reservation.isEntryPaid ? "Sim" : "Não"}
                       </p>
                       {reservation.notes ? (
                         <p className="mt-1 text-xs text-white/60">Observações: {reservation.notes}</p>

@@ -32,9 +32,11 @@ export type Reservation = {
   stockOverrideReason?: string | null;
   customerName: string;
   customerDocumentNumber: string;
+  customerPhoneNumber: string;
   customerAddress: string;
   notes?: string | null;
   hasBalloonArch: boolean;
+  isEntryPaid: boolean;
 };
 
 export type KitDetail = {
@@ -78,9 +80,11 @@ export type ReserveResponse = {
   stockOverrideReason?: string | null;
   customerName: string;
   customerDocumentNumber: string;
+  customerPhoneNumber: string;
   customerAddress: string;
   notes?: string | null;
   hasBalloonArch: boolean;
+  isEntryPaid: boolean;
   message: string;
 };
 
