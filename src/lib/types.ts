@@ -94,3 +94,20 @@ export type CancelResponse = {
   status: string;
   message: string;
 };
+
+export type ContractData = {
+  kitThemeId: string;
+  reservationId: string;
+  kitThemeName: string;
+  kitCategoryName: string;
+  reservationStartDate: string;
+  reservationEndDate: string;
+  customerName: string;
+  customerDocumentNumber: string;
+  customerPhoneNumber: string;
+  customerAddress: string;
+  notes?: string | null;
+  hasBalloonArch: boolean;
+  isEntryPaid: boolean;
+  contractDate: string;
+};

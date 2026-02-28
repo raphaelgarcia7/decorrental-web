@@ -6,6 +6,7 @@ import { Alert } from "@/components/Alert";
 import { Badge } from "@/components/Badge";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
+import { ContractGeneratorModal } from "@/components/ContractGeneratorModal";
 import { EmptyState } from "@/components/EmptyState";
 import { Input } from "@/components/Input";
 import { Select } from "@/components/Select";
@@ -54,6 +55,8 @@ export default function ReservationsPage() {
 
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [contractReservationId, setContractReservationId] = useState<string | null>(null);
+  const [isContractModalOpen, setIsContractModalOpen] = useState(false);
 
   const kitById = useMemo(
     () =>
@@ -263,6 +266,16 @@ export default function ReservationsPage() {
     } finally {
       setCancellingReservationId(null);
     }
+  };
+
+  const openContractModal = (reservationId: string) => {
+    setContractReservationId(reservationId);
+    setIsContractModalOpen(true);
+  };
+
+  const closeContractModal = () => {
+    setIsContractModalOpen(false);
+    setContractReservationId(null);
   };
 
   return (
@@ -548,6 +561,14 @@ export default function ReservationsPage() {
 
                       {reservation.isStockOverride ? <Badge tone="warning" label="Exceção" /> : null}
 
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openContractModal(reservation.id)}
+                      >
+                        Gerar contrato
+                      </Button>
+
                       {reservation.status === "Active" ? (
                         <Button
                           variant="secondary"
@@ -576,6 +597,13 @@ export default function ReservationsPage() {
           ) : null}
         </>
       )}
+
+      <ContractGeneratorModal
+        isOpen={isContractModalOpen}
+        kitId={selectedKitId}
+        reservationId={contractReservationId}
+        onClose={closeContractModal}
+      />
     </div>
   );
 }

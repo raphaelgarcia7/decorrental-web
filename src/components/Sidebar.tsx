@@ -8,6 +8,7 @@ const navigationItems = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/kits", label: "Kits" },
   { href: "/reservations", label: "Reservas" },
+  { href: "/contracts", label: "Contratos" },
   { href: "/catalog/item-types", label: "Itens de estoque" },
   { href: "/catalog/categories", label: "Categorias" },
   { href: "/calendar", label: "Calendário" },

@@ -4,6 +4,7 @@ import type {
   AuthTokenResponse,
   Category,
   CancelResponse,
+  ContractData,
   ItemType,
   KitDetail,
   KitSummary,
@@ -181,3 +182,42 @@ export const addCategoryItem = async (
     headers: getAuthHeaders(),
     body: JSON.stringify({ itemTypeId, quantity }),
   });
+
+export const getReservationContractData = async (
+  kitId: string,
+  reservationId: string
+): Promise<ContractData> =>
+  request<ContractData>(`/api/kits/${kitId}/reservations/${reservationId}/contract-data`, {
+    headers: getAuthHeaders(),
+  });
+
+export const generateContractDocument = async (
+  format: "docx" | "pdf",
+  payload: ContractData
+): Promise<Blob> => {
+  const response = await fetch(buildUrl(`/api/contracts/generate?format=${format}`), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    let details: ProblemDetails | undefined;
+    try {
+      details = (await response.json()) as ProblemDetails;
+    } catch {
+      details = undefined;
+    }
+
+    throw new ApiError(
+      details?.detail ?? `Erro na requisicao (${response.status}).`,
+      response.status,
+      details
+    );
+  }
+
+  return response.blob();
+};

@@ -6,6 +6,7 @@ import { Alert } from "@/components/Alert";
 import { Badge } from "@/components/Badge";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
+import { ContractGeneratorModal } from "@/components/ContractGeneratorModal";
 import { EmptyState } from "@/components/EmptyState";
 import { Input } from "@/components/Input";
 import { Select } from "@/components/Select";
@@ -45,6 +46,8 @@ export default function KitDetailPage() {
   const [cancellingReservationId, setCancellingReservationId] = useState<string | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [contractReservationId, setContractReservationId] = useState<string | null>(null);
+  const [isContractModalOpen, setIsContractModalOpen] = useState(false);
 
   const categoryById = useMemo(
     () =>
@@ -204,6 +207,16 @@ export default function KitDetailPage() {
     } finally {
       setCancellingReservationId(null);
     }
+  };
+
+  const openContractModal = (reservationId: string) => {
+    setContractReservationId(reservationId);
+    setIsContractModalOpen(true);
+  };
+
+  const closeContractModal = () => {
+    setIsContractModalOpen(false);
+    setContractReservationId(null);
   };
 
   return (
@@ -443,6 +456,13 @@ export default function KitDetailPage() {
                         label={getReservationStatusLabel(reservation.status)}
                       />
                       {reservation.isStockOverride ? <Badge tone="warning" label="Exceção" /> : null}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openContractModal(reservation.id)}
+                      >
+                        Gerar contrato
+                      </Button>
                       {reservation.status === "Active" ? (
                         <Button
                           variant="secondary"
@@ -472,6 +492,13 @@ export default function KitDetailPage() {
           ) : null}
         </>
       )}
+
+      <ContractGeneratorModal
+        isOpen={isContractModalOpen}
+        kitId={kitId}
+        reservationId={contractReservationId}
+        onClose={closeContractModal}
+      />
     </div>
   );
 }
