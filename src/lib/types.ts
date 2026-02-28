@@ -88,6 +88,25 @@ export type ReserveResponse = {
   message: string;
 };
 
+export type UpdateReservationResponse = {
+  reservationId: string;
+  kitThemeId: string;
+  kitCategoryId: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+  isStockOverride: boolean;
+  stockOverrideReason?: string | null;
+  customerName: string;
+  customerDocumentNumber: string;
+  customerPhoneNumber: string;
+  customerAddress: string;
+  notes?: string | null;
+  hasBalloonArch: boolean;
+  isEntryPaid: boolean;
+  message: string;
+};
+
 export type CancelResponse = {
   reservationId: string;
   kitThemeId: string;

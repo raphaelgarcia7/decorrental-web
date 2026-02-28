@@ -108,33 +108,34 @@ export const ContractGeneratorModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-      <div className="w-full max-w-4xl rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[0_25px_60px_rgba(0,0,0,0.45)]">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h3 className="text-xl font-semibold text-white" style={{ fontFamily: "var(--font-heading)" }}>
-              {title}
-            </h3>
-            <p className="mt-1 text-sm text-white/60">
-              Revise os dados e escolha uma ação para gerar o contrato.
-            </p>
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/70 p-4 md:p-6">
+      <div className="flex min-h-full items-start justify-center">
+        <div className="my-4 flex w-full max-w-4xl flex-col rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[0_25px_60px_rgba(0,0,0,0.45)] md:max-h-[90vh]">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h3 className="text-xl font-semibold text-white" style={{ fontFamily: "var(--font-heading)" }}>
+                {title}
+              </h3>
+              <p className="mt-1 text-sm text-white/60">
+                Revise os dados e escolha uma ação para gerar o contrato.
+              </p>
+            </div>
+            <Button variant="ghost" onClick={onClose}>
+              Fechar
+            </Button>
           </div>
-          <Button variant="ghost" onClick={onClose}>
-            Fechar
-          </Button>
-        </div>
 
-        {message ? (
-          <div className="mt-4">
-            <Alert tone="error" message={message} />
-          </div>
-        ) : null}
+          {message ? (
+            <div className="mt-4">
+              <Alert tone="error" message={message} />
+            </div>
+          ) : null}
 
-        {loading ? (
-          <p className="mt-6 text-sm text-white/70">Carregando dados da reserva...</p>
-        ) : contractData ? (
-          <>
-            <div className="mt-6 grid gap-4 md:grid-cols-2">
+          {loading ? (
+            <p className="mt-6 text-sm text-white/70">Carregando dados da reserva...</p>
+          ) : contractData ? (
+            <div className="mt-6 overflow-y-auto pr-1 md:max-h-[calc(90vh-12rem)]">
+              <div className="grid gap-4 md:grid-cols-2">
               <Input
                 label="Nome do cliente"
                 value={contractData.customerName}
@@ -226,28 +227,28 @@ export const ContractGeneratorModal = ({
                 />
               </label>
             </div>
-
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Button onClick={() => void handleAction("docx")} disabled={processingAction !== null}>
-                {processingAction === "docx" ? "Gerando Word..." : "Gerar em Word"}
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => void handleAction("pdf")}
-                disabled={processingAction !== null}
-              >
-                {processingAction === "pdf" ? "Gerando PDF..." : "Gerar PDF"}
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => void handleAction("print")}
-                disabled={processingAction !== null}
-              >
-                {processingAction === "print" ? "Preparando impressão..." : "Imprimir"}
-              </Button>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Button onClick={() => void handleAction("docx")} disabled={processingAction !== null}>
+                  {processingAction === "docx" ? "Gerando Word..." : "Gerar em Word"}
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => void handleAction("pdf")}
+                  disabled={processingAction !== null}
+                >
+                  {processingAction === "pdf" ? "Gerando PDF..." : "Gerar PDF"}
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => void handleAction("print")}
+                  disabled={processingAction !== null}
+                >
+                  {processingAction === "print" ? "Preparando impressão..." : "Imprimir"}
+                </Button>
+              </div>
             </div>
-          </>
-        ) : null}
+          ) : null}
+        </div>
       </div>
     </div>
   );

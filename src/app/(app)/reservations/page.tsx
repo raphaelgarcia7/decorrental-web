@@ -18,6 +18,7 @@ import {
   getKitReservations,
   getKits,
   reserveKit,
+  updateReservation,
 } from "@/lib/api";
 import { formatRange } from "@/lib/date";
 import { getReservationStatusLabel } from "@/lib/reservationLabels";
@@ -47,6 +48,7 @@ export default function ReservationsPage() {
 
   const [allowStockException, setAllowStockException] = useState(false);
   const [stockExceptionReason, setStockExceptionReason] = useState("");
+  const [editingReservationId, setEditingReservationId] = useState<string | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [loadingReservations, setLoadingReservations] = useState(false);
@@ -77,8 +79,10 @@ export default function ReservationsPage() {
   );
 
   const selectedKitName = selectedKitId ? kitById[selectedKitId] : "";
+  const isEditingReservation = editingReservationId !== null;
 
   const clearForm = () => {
+    setEditingReservationId(null);
     setStartDate("");
     setEndDate("");
     setCustomerName("");
@@ -159,7 +163,31 @@ export default function ReservationsPage() {
     void loadReservations(selectedKitId);
   }, [ready, selectedKitId, loadReservations]);
 
-  const handleCreateReservation = async () => {
+  const handleStartEditingReservation = (reservation: Reservation) => {
+    setEditingReservationId(reservation.id);
+    setSelectedCategoryId(reservation.kitCategoryId);
+    setStartDate(reservation.startDate);
+    setEndDate(reservation.endDate);
+    setCustomerName(reservation.customerName);
+    setCustomerDocumentNumber(reservation.customerDocumentNumber);
+    setCustomerPhoneNumber(reservation.customerPhoneNumber);
+    setCustomerAddress(reservation.customerAddress);
+    setNotes(reservation.notes ?? "");
+    setHasBalloonArch(reservation.hasBalloonArch);
+    setIsEntryPaid(reservation.isEntryPaid);
+    setAllowStockException(reservation.isStockOverride);
+    setStockExceptionReason(reservation.stockOverrideReason ?? "");
+    setFeedbackMessage("Reserva carregada no formulário para edição.");
+    setError(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleCancelEditingReservation = () => {
+    clearForm();
+    setFeedbackMessage("Edição cancelada.");
+  };
+
+  const handleSubmitReservation = async () => {
     if (!selectedKitId) {
       setFeedbackMessage("Selecione um kit para criar a reserva.");
       return;
@@ -210,7 +238,7 @@ export default function ReservationsPage() {
     setFeedbackMessage(null);
 
     try {
-      const response = await reserveKit(selectedKitId, {
+      const payload = {
         kitCategoryId: selectedCategoryId,
         startDate,
         endDate,
@@ -223,13 +251,23 @@ export default function ReservationsPage() {
         notes: notes.trim() || undefined,
         hasBalloonArch,
         isEntryPaid,
-      });
+      };
 
-      setFeedbackMessage(
-        response.isStockOverride
-          ? `${response.message} Exceção de estoque aplicada.`
-          : response.message
-      );
+      if (editingReservationId) {
+        const response = await updateReservation(selectedKitId, editingReservationId, payload);
+        setFeedbackMessage(
+          response.isStockOverride
+            ? `${response.message} Exceção de estoque aplicada.`
+            : response.message
+        );
+      } else {
+        const response = await reserveKit(selectedKitId, payload);
+        setFeedbackMessage(
+          response.isStockOverride
+            ? `${response.message} Exceção de estoque aplicada.`
+            : response.message
+        );
+      }
 
       clearForm();
       await loadReservations(selectedKitId);
@@ -237,7 +275,9 @@ export default function ReservationsPage() {
       setFeedbackMessage(
         requestError instanceof ApiError
           ? requestError.details?.detail ?? requestError.message
-          : "Não foi possível criar a reserva."
+          : isEditingReservation
+            ? "Não foi possível atualizar a reserva."
+            : "Não foi possível criar a reserva."
       );
     } finally {
       setCreatingReservation(false);
@@ -302,7 +342,7 @@ export default function ReservationsPage() {
         <>
           <Card>
             <h2 className="text-lg font-semibold text-white" style={{ fontFamily: "var(--font-heading)" }}>
-              Criar reserva
+              {isEditingReservation ? "Editar reserva" : "Criar reserva"}
             </h2>
 
             <div className="mt-4 grid gap-4 md:grid-cols-5">
@@ -310,6 +350,7 @@ export default function ReservationsPage() {
                 label="Kit"
                 value={selectedKitId}
                 onChange={(event) => setSelectedKitId(event.target.value)}
+                disabled={isEditingReservation}
               >
                 <option value="">Selecione</option>
                 {kits.map((kit) => (
@@ -346,15 +387,40 @@ export default function ReservationsPage() {
                 onChange={(event) => setEndDate(event.target.value)}
               />
 
-              <Button
-                onClick={handleCreateReservation}
-                size="md"
-                className="h-[48px] self-end"
-                disabled={creatingReservation || !selectedKitId}
-              >
-                {creatingReservation ? "Reservando..." : "Reservar"}
-              </Button>
+              <div className="flex items-end gap-2">
+                <Button
+                  onClick={handleSubmitReservation}
+                  size="md"
+                  className="h-[48px]"
+                  disabled={creatingReservation || !selectedKitId}
+                >
+                  {creatingReservation
+                    ? isEditingReservation
+                      ? "Salvando..."
+                      : "Reservando..."
+                    : isEditingReservation
+                      ? "Salvar alterações"
+                      : "Reservar"}
+                </Button>
+                {isEditingReservation ? (
+                  <Button
+                    variant="ghost"
+                    size="md"
+                    className="h-[48px]"
+                    onClick={handleCancelEditingReservation}
+                    disabled={creatingReservation}
+                  >
+                    Cancelar edição
+                  </Button>
+                ) : null}
+              </div>
             </div>
+
+            {isEditingReservation ? (
+              <p className="mt-3 text-xs text-white/60">
+                O kit fica bloqueado durante a edição para evitar movimentação indevida de reserva entre temas.
+              </p>
+            ) : null}
 
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               <Input
@@ -568,6 +634,16 @@ export default function ReservationsPage() {
                       >
                         Gerar contrato
                       </Button>
+
+                      {reservation.status === "Active" ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleStartEditingReservation(reservation)}
+                        >
+                          Editar
+                        </Button>
+                      ) : null}
 
                       {reservation.status === "Active" ? (
                         <Button

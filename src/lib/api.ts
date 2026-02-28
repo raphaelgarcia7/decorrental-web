@@ -12,6 +12,7 @@ import type {
   ProblemDetails,
   Reservation,
   ReserveResponse,
+  UpdateReservationResponse,
 } from "./types";
 
 export class ApiError extends Error {
@@ -133,6 +134,30 @@ export const cancelReservation = async (
   request<CancelResponse>(`/api/kits/${kitId}/reservations/${reservationId}/cancel`, {
     method: "POST",
     headers: getAuthHeaders(),
+  });
+
+export const updateReservation = async (
+  kitId: string,
+  reservationId: string,
+  payload: {
+    kitCategoryId: string;
+    startDate: string;
+    endDate: string;
+    allowStockOverride?: boolean;
+    stockOverrideReason?: string;
+    customerName: string;
+    customerDocumentNumber: string;
+    customerPhoneNumber: string;
+    customerAddress: string;
+    notes?: string;
+    hasBalloonArch: boolean;
+    isEntryPaid: boolean;
+  }
+): Promise<UpdateReservationResponse> =>
+  request<UpdateReservationResponse>(`/api/kits/${kitId}/reservations/${reservationId}`, {
+    method: "PUT",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
   });
 
 export const getItemTypes = async (): Promise<ItemType[]> =>
