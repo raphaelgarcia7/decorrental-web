@@ -1,5 +1,17 @@
+"use client";
+
 import type { ReactNode } from "react";
-import { Sidebar } from "@/components/Sidebar";
+import dynamic from "next/dynamic";
+
+const Sidebar = dynamic(
+  () => import("@/components/Sidebar").then((module) => module.Sidebar),
+  {
+    ssr: false,
+    loading: () => (
+      <aside className="flex min-h-screen w-64 flex-col gap-8 border-r border-[var(--border)] bg-[var(--surface)]/80 px-6 py-8" />
+    ),
+  }
+);
 
 export const AppShell = ({ children }: { children: ReactNode }) => (
   <div className="flex min-h-screen">
