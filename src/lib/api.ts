@@ -1,6 +1,7 @@
 import { API_BASE_URL } from "./config";
 import { getToken } from "./auth";
 import type {
+  AddressLookupResponse,
   AuthTokenResponse,
   Category,
   CancelResponse,
@@ -116,6 +117,14 @@ export const reserveKit = async (
     customerDocumentNumber: string;
     customerPhoneNumber: string;
     customerAddress: string;
+    customerZipCode?: string;
+    customerStreet?: string;
+    customerNumber?: string;
+    customerComplement?: string;
+    customerNeighborhood?: string;
+    customerCity?: string;
+    customerState?: string;
+    customerReference?: string;
     notes?: string;
     hasBalloonArch: boolean;
     isEntryPaid: boolean;
@@ -149,6 +158,14 @@ export const updateReservation = async (
     customerDocumentNumber: string;
     customerPhoneNumber: string;
     customerAddress: string;
+    customerZipCode?: string;
+    customerStreet?: string;
+    customerNumber?: string;
+    customerComplement?: string;
+    customerNeighborhood?: string;
+    customerCity?: string;
+    customerState?: string;
+    customerReference?: string;
     notes?: string;
     hasBalloonArch: boolean;
     isEntryPaid: boolean;
@@ -246,3 +263,8 @@ export const generateContractDocument = async (
 
   return response.blob();
 };
+
+export const lookupAddressByZipCode = async (zipCode: string): Promise<AddressLookupResponse> =>
+  request<AddressLookupResponse>(`/api/address/lookup-cep/${zipCode}`, {
+    headers: getAuthHeaders(),
+  });

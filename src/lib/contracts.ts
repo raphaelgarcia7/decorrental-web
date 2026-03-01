@@ -1,3 +1,4 @@
+import { buildAddressLine, buildCityLine } from "@/lib/address";
 import type { ContractData } from "@/lib/types";
 
 const toCurrency = (value?: number | null) =>
@@ -15,6 +16,21 @@ const buildClauseLines = (reservationEndDate: string) => [
   "7. Cancelamentos não geram reembolso, podendo remarcar em até 6 meses.",
   "8. Não há troca de data com menos de 30 dias de antecedência.",
 ];
+
+const getContractAddressFields = (contractData: ContractData) => {
+  const addressLine = buildAddressLine({
+    street: contractData.customerStreet,
+    number: contractData.customerNumber,
+    complement: contractData.customerComplement,
+    fallbackAddress: contractData.customerAddress,
+  });
+
+  return {
+    addressLine: addressLine || "Não informado",
+    neighborhood: contractData.customerNeighborhood?.trim() || "Não informado",
+    cityLine: buildCityLine(contractData.customerCity, contractData.customerState),
+  };
+};
 
 export const buildContractFileName = (contractData: ContractData, extension: "docx" | "pdf") => {
   const customerSlug = contractData.customerName
@@ -45,6 +61,7 @@ export const printContract = (contractData: ContractData) => {
   const clauses = buildClauseLines(contractData.reservationEndDate)
     .map((clause) => `<p>${clause}</p>`)
     .join("");
+  const addressFields = getContractAddressFields(contractData);
 
   const html = `
     <html>
@@ -63,9 +80,9 @@ export const printContract = (contractData: ContractData) => {
         <h2>CLIENTE:</h2>
         <p>Nome: ${contractData.customerName}</p>
         <p>CPF: ${contractData.customerDocumentNumber}</p>
-        <p>Endereço: ${contractData.customerAddress}</p>
-        <p>Bairro: ${contractData.customerNeighborhood || "Não informado"}</p>
-        <p>Cidade: ${contractData.customerCity || "Não informado"}</p>
+        <p>Endereço: ${addressFields.addressLine}</p>
+        <p>Bairro: ${addressFields.neighborhood}</p>
+        <p>Cidade: ${addressFields.cityLine}</p>
         <p>Data da retirada: ${contractData.reservationStartDate}</p>
 
         <h2>CLÁUSULAS</h2>
