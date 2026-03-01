@@ -1,6 +1,10 @@
 ﻿import type { ContractData } from "@/lib/types";
 
 const toYesNo = (value: boolean) => (value ? "Sim" : "Não");
+const toCurrency = (value?: number | null) =>
+  value === null || value === undefined
+    ? "0,00"
+    : value.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 export const buildContractFileName = (contractData: ContractData, extension: "docx" | "pdf") => {
   const customerSlug = contractData.customerName
@@ -46,9 +50,13 @@ export const printContract = (contractData: ContractData) => {
         <p><strong>Documento:</strong> ${contractData.customerDocumentNumber}</p>
         <p><strong>Telefone:</strong> ${contractData.customerPhoneNumber}</p>
         <p><strong>Endereço:</strong> ${contractData.customerAddress}</p>
+        <p><strong>Bairro:</strong> ${contractData.customerNeighborhood || "Não informado"}</p>
+        <p><strong>Cidade:</strong> ${contractData.customerCity || "Não informado"}</p>
         <p><strong>Tema:</strong> ${contractData.kitThemeName}</p>
         <p><strong>Categoria:</strong> ${contractData.kitCategoryName}</p>
         <p><strong>Período:</strong> ${contractData.reservationStartDate} até ${contractData.reservationEndDate}</p>
+        <p><strong>Valor total:</strong> R$ ${toCurrency(contractData.totalAmount)}</p>
+        <p><strong>Valor de entrada:</strong> R$ ${toCurrency(contractData.entryAmount)}</p>
         <p><strong>Arco de balões:</strong> ${toYesNo(contractData.hasBalloonArch)}</p>
         <p><strong>Entrada paga:</strong> ${toYesNo(contractData.isEntryPaid)}</p>
         <p><strong>Observações:</strong> ${contractData.notes || "Não informado."}</p>

@@ -125,8 +125,12 @@ export type ContractData = {
   customerDocumentNumber: string;
   customerPhoneNumber: string;
   customerAddress: string;
+  customerNeighborhood?: string | null;
+  customerCity?: string | null;
   notes?: string | null;
   hasBalloonArch: boolean;
   isEntryPaid: boolean;
   contractDate: string;
+  totalAmount?: number | null;
+  entryAmount?: number | null;
 };
