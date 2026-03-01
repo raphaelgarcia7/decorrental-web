@@ -174,6 +174,24 @@ export const ContractGeneratorModal = ({
                   )
                 }
               />
+              <Input
+                label="Bairro"
+                value={contractData.customerNeighborhood ?? ""}
+                onChange={(event) =>
+                  setContractData((currentData) =>
+                    currentData ? { ...currentData, customerNeighborhood: event.target.value || null } : currentData
+                  )
+                }
+              />
+              <Input
+                label="Cidade"
+                value={contractData.customerCity ?? ""}
+                onChange={(event) =>
+                  setContractData((currentData) =>
+                    currentData ? { ...currentData, customerCity: event.target.value || null } : currentData
+                  )
+                }
+              />
               <Input label="Tema" value={contractData.kitThemeName} readOnly />
               <Input label="Categoria" value={contractData.kitCategoryName} readOnly />
               <Input label="Data de início" value={contractData.reservationStartDate} readOnly />
@@ -185,6 +203,40 @@ export const ContractGeneratorModal = ({
                 onChange={(event) =>
                   setContractData((currentData) =>
                     currentData ? { ...currentData, contractDate: event.target.value } : currentData
+                  )
+                }
+              />
+              <Input
+                label="Valor total"
+                type="number"
+                step="0.01"
+                value={contractData.totalAmount ?? ""}
+                onChange={(event) =>
+                  setContractData((currentData) =>
+                    currentData
+                      ? {
+                          ...currentData,
+                          totalAmount:
+                            event.target.value === "" ? null : Number(event.target.value),
+                        }
+                      : currentData
+                  )
+                }
+              />
+              <Input
+                label="Valor de entrada"
+                type="number"
+                step="0.01"
+                value={contractData.entryAmount ?? ""}
+                onChange={(event) =>
+                  setContractData((currentData) =>
+                    currentData
+                      ? {
+                          ...currentData,
+                          entryAmount:
+                            event.target.value === "" ? null : Number(event.target.value),
+                        }
+                      : currentData
                   )
                 }
               />
