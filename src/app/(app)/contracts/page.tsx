@@ -13,8 +13,10 @@ import {
   generateContractDocument,
   getKitReservations,
   getKits,
+  lookupAddressByZipCode,
   getReservationContractData,
 } from "@/lib/api";
+import { buildAddressLine, formatZipCode, hasCompleteStructuredAddress } from "@/lib/address";
 import { buildContractFileName, downloadBlob, printContract } from "@/lib/contracts";
 import { formatRange } from "@/lib/date";
 import { getReservationStatusLabel } from "@/lib/reservationLabels";
@@ -34,6 +36,12 @@ const createEmptyContractData = (): ContractData => ({
   customerDocumentNumber: "",
   customerPhoneNumber: "",
   customerAddress: "",
+  customerZipCode: "",
+  customerStreet: "",
+  customerNumber: "",
+  customerComplement: "",
+  customerState: "",
+  customerReference: "",
   customerNeighborhood: "",
   customerCity: "",
   notes: "",
@@ -56,10 +64,12 @@ export default function ContractsPage() {
   const [loading, setLoading] = useState(true);
   const [loadingReservations, setLoadingReservations] = useState(false);
   const [loadingContractData, setLoadingContractData] = useState(false);
+  const [loadingZipCodeLookup, setLoadingZipCodeLookup] = useState(false);
   const [processingAction, setProcessingAction] = useState<"docx" | "pdf" | "print" | null>(null);
 
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [zipCodeLookupError, setZipCodeLookupError] = useState<string | null>(null);
 
   const kitNameById = useMemo(
     () =>
@@ -144,6 +154,7 @@ export default function ContractsPage() {
     try {
       const response = await getReservationContractData(selectedKitId, selectedReservationId);
       setContractData(response);
+      setZipCodeLookupError(null);
     } catch (requestError) {
       setMessage(
         requestError instanceof ApiError
@@ -152,6 +163,37 @@ export default function ContractsPage() {
       );
     } finally {
       setLoadingContractData(false);
+    }
+  };
+
+  const handleZipCodeLookup = async (rawZipCode: string) => {
+    const formattedZipCode = formatZipCode(rawZipCode);
+    setContractData((currentData) => ({ ...currentData, customerZipCode: formattedZipCode }));
+    setZipCodeLookupError(null);
+
+    const zipCodeDigits = formattedZipCode.replace(/\D/g, "");
+    if (zipCodeDigits.length !== 8) {
+      return;
+    }
+
+    setLoadingZipCodeLookup(true);
+    try {
+      const lookupResponse = await lookupAddressByZipCode(zipCodeDigits);
+      setContractData((currentData) => ({
+        ...currentData,
+        customerStreet: lookupResponse.street,
+        customerNeighborhood: lookupResponse.neighborhood,
+        customerCity: lookupResponse.city,
+        customerState: lookupResponse.state,
+      }));
+    } catch (requestError) {
+      setZipCodeLookupError(
+        requestError instanceof ApiError
+          ? requestError.details?.detail ?? "Não foi possível consultar o CEP informado."
+          : "Não foi possível consultar o CEP informado."
+      );
+    } finally {
+      setLoadingZipCodeLookup(false);
     }
   };
 
@@ -181,8 +223,29 @@ export default function ContractsPage() {
       return false;
     }
 
-    if (!contractData.customerAddress.trim()) {
-      setMessage("Informe o endereço do cliente.");
+    const formattedAddressLine = buildAddressLine({
+      street: contractData.customerStreet,
+      number: contractData.customerNumber,
+      complement: contractData.customerComplement,
+      fallbackAddress: contractData.customerAddress,
+    });
+    if (!formattedAddressLine) {
+      setMessage("Informe o endereço completo ou logradouro e número.");
+      return false;
+    }
+
+    if (!contractData.customerNeighborhood?.trim()) {
+      setMessage("Informe o bairro do cliente.");
+      return false;
+    }
+
+    if (!contractData.customerCity?.trim()) {
+      setMessage("Informe a cidade do cliente.");
+      return false;
+    }
+
+    if (!hasCompleteStructuredAddress(contractData)) {
+      setMessage("Preencha logradouro, número, bairro e cidade para o contrato.");
       return false;
     }
 
@@ -208,13 +271,25 @@ export default function ContractsPage() {
     setMessage(null);
 
     try {
+      const normalizedContractData: ContractData = {
+        ...contractData,
+        customerAddress: buildAddressLine({
+          street: contractData.customerStreet,
+          number: contractData.customerNumber,
+          complement: contractData.customerComplement,
+          fallbackAddress: contractData.customerAddress,
+        }),
+        customerZipCode: contractData.customerZipCode?.replace(/\D/g, "") || null,
+        customerState: contractData.customerState?.trim().toUpperCase() || null,
+      };
+
       if (action === "print") {
-        printContract(contractData);
+        printContract(normalizedContractData);
         return;
       }
 
-      const blob = await generateContractDocument(action, contractData);
-      const fileName = buildContractFileName(contractData, action);
+      const blob = await generateContractDocument(action, normalizedContractData);
+      const fileName = buildContractFileName(normalizedContractData, action);
       downloadBlob(blob, fileName);
     } catch (requestError) {
       setMessage(
@@ -338,12 +413,49 @@ export default function ContractsPage() {
               />
 
               <Input
-                label="Endereço"
-                value={contractData.customerAddress}
+                label="CEP"
+                value={contractData.customerZipCode ?? ""}
                 onChange={(event) =>
-                  setContractData((currentData) => ({ ...currentData, customerAddress: event.target.value }))
+                  void handleZipCodeLookup(event.target.value)
                 }
-                maxLength={250}
+                maxLength={9}
+                placeholder="00000-000"
+              />
+
+              <Input
+                label="Logradouro"
+                value={contractData.customerStreet ?? ""}
+                onChange={(event) =>
+                  setContractData((currentData) => ({
+                    ...currentData,
+                    customerStreet: event.target.value || null,
+                  }))
+                }
+                maxLength={180}
+              />
+
+              <Input
+                label="Número"
+                value={contractData.customerNumber ?? ""}
+                onChange={(event) =>
+                  setContractData((currentData) => ({
+                    ...currentData,
+                    customerNumber: event.target.value || null,
+                  }))
+                }
+                maxLength={20}
+              />
+
+              <Input
+                label="Complemento"
+                value={contractData.customerComplement ?? ""}
+                onChange={(event) =>
+                  setContractData((currentData) => ({
+                    ...currentData,
+                    customerComplement: event.target.value || null,
+                  }))
+                }
+                maxLength={120}
               />
 
               <Input
@@ -369,6 +481,50 @@ export default function ContractsPage() {
                 }
                 maxLength={120}
               />
+
+              <Input
+                label="UF"
+                value={contractData.customerState ?? ""}
+                onChange={(event) =>
+                  setContractData((currentData) => ({
+                    ...currentData,
+                    customerState: event.target.value.toUpperCase() || null,
+                  }))
+                }
+                maxLength={2}
+              />
+
+              <Input
+                label="Referência"
+                value={contractData.customerReference ?? ""}
+                onChange={(event) =>
+                  setContractData((currentData) => ({
+                    ...currentData,
+                    customerReference: event.target.value || null,
+                  }))
+                }
+                maxLength={250}
+              />
+
+              <Input
+                label="Endereço legado (opcional)"
+                value={contractData.customerAddress}
+                onChange={(event) =>
+                  setContractData((currentData) => ({ ...currentData, customerAddress: event.target.value }))
+                }
+                maxLength={250}
+                className="md:col-span-2"
+              />
+
+              {loadingZipCodeLookup ? (
+                <p className="md:col-span-2 text-xs text-white/60">Consultando CEP...</p>
+              ) : null}
+
+              {zipCodeLookupError ? (
+                <div className="md:col-span-2">
+                  <Alert tone="info" message={zipCodeLookupError} />
+                </div>
+              ) : null}
 
               <Input
                 label="Tema"

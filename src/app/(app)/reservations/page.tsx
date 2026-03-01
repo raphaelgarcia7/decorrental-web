@@ -17,9 +17,11 @@ import {
   getCategories,
   getKitReservations,
   getKits,
+  lookupAddressByZipCode,
   reserveKit,
   updateReservation,
 } from "@/lib/api";
+import { buildAddressLine, formatZipCode } from "@/lib/address";
 import { formatRange } from "@/lib/date";
 import { getReservationStatusLabel } from "@/lib/reservationLabels";
 import { useAuthGuard } from "@/lib/useAuthGuard";
@@ -42,6 +44,14 @@ export default function ReservationsPage() {
   const [customerDocumentNumber, setCustomerDocumentNumber] = useState("");
   const [customerPhoneNumber, setCustomerPhoneNumber] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
+  const [customerZipCode, setCustomerZipCode] = useState("");
+  const [customerStreet, setCustomerStreet] = useState("");
+  const [customerNumber, setCustomerNumber] = useState("");
+  const [customerComplement, setCustomerComplement] = useState("");
+  const [customerNeighborhood, setCustomerNeighborhood] = useState("");
+  const [customerCity, setCustomerCity] = useState("");
+  const [customerState, setCustomerState] = useState("");
+  const [customerReference, setCustomerReference] = useState("");
   const [notes, setNotes] = useState("");
   const [hasBalloonArch, setHasBalloonArch] = useState(false);
   const [isEntryPaid, setIsEntryPaid] = useState(false);
@@ -52,11 +62,13 @@ export default function ReservationsPage() {
 
   const [loading, setLoading] = useState(true);
   const [loadingReservations, setLoadingReservations] = useState(false);
+  const [loadingZipCodeLookup, setLoadingZipCodeLookup] = useState(false);
   const [creatingReservation, setCreatingReservation] = useState(false);
   const [cancellingReservationId, setCancellingReservationId] = useState<string | null>(null);
 
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [zipCodeLookupError, setZipCodeLookupError] = useState<string | null>(null);
   const [contractReservationId, setContractReservationId] = useState<string | null>(null);
   const [isContractModalOpen, setIsContractModalOpen] = useState(false);
 
@@ -89,11 +101,20 @@ export default function ReservationsPage() {
     setCustomerDocumentNumber("");
     setCustomerPhoneNumber("");
     setCustomerAddress("");
+    setCustomerZipCode("");
+    setCustomerStreet("");
+    setCustomerNumber("");
+    setCustomerComplement("");
+    setCustomerNeighborhood("");
+    setCustomerCity("");
+    setCustomerState("");
+    setCustomerReference("");
     setNotes("");
     setHasBalloonArch(false);
     setIsEntryPaid(false);
     setAllowStockException(false);
     setStockExceptionReason("");
+    setZipCodeLookupError(null);
   };
 
   const loadReservations = useCallback(async (kitId: string) => {
@@ -110,6 +131,37 @@ export default function ReservationsPage() {
       setLoadingReservations(false);
     }
   }, []);
+
+  const handleZipCodeLookup = useCallback(
+    async (rawZipCode: string) => {
+      const formattedZipCode = formatZipCode(rawZipCode);
+      setCustomerZipCode(formattedZipCode);
+      setZipCodeLookupError(null);
+
+      const zipCodeDigits = formattedZipCode.replace(/\D/g, "");
+      if (zipCodeDigits.length !== 8) {
+        return;
+      }
+
+      setLoadingZipCodeLookup(true);
+      try {
+        const lookupResponse = await lookupAddressByZipCode(zipCodeDigits);
+        setCustomerStreet(lookupResponse.street);
+        setCustomerNeighborhood(lookupResponse.neighborhood);
+        setCustomerCity(lookupResponse.city);
+        setCustomerState(lookupResponse.state);
+      } catch (requestError) {
+        setZipCodeLookupError(
+          requestError instanceof ApiError
+            ? requestError.details?.detail ?? "Não foi possível consultar o CEP informado."
+            : "Não foi possível consultar o CEP informado."
+        );
+      } finally {
+        setLoadingZipCodeLookup(false);
+      }
+    },
+    []
+  );
 
   const loadInitialData = useCallback(async () => {
     setLoading(true);
@@ -172,11 +224,20 @@ export default function ReservationsPage() {
     setCustomerDocumentNumber(reservation.customerDocumentNumber);
     setCustomerPhoneNumber(reservation.customerPhoneNumber);
     setCustomerAddress(reservation.customerAddress);
+    setCustomerZipCode(formatZipCode(reservation.customerZipCode ?? ""));
+    setCustomerStreet(reservation.customerStreet ?? "");
+    setCustomerNumber(reservation.customerNumber ?? "");
+    setCustomerComplement(reservation.customerComplement ?? "");
+    setCustomerNeighborhood(reservation.customerNeighborhood ?? "");
+    setCustomerCity(reservation.customerCity ?? "");
+    setCustomerState(reservation.customerState ?? "");
+    setCustomerReference(reservation.customerReference ?? "");
     setNotes(reservation.notes ?? "");
     setHasBalloonArch(reservation.hasBalloonArch);
     setIsEntryPaid(reservation.isEntryPaid);
     setAllowStockException(reservation.isStockOverride);
     setStockExceptionReason(reservation.stockOverrideReason ?? "");
+    setZipCodeLookupError(null);
     setFeedbackMessage("Reserva carregada no formulário para edição.");
     setError(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -221,9 +282,11 @@ export default function ReservationsPage() {
       return;
     }
 
+    const normalizedStreet = customerStreet.trim();
+    const normalizedNumber = customerNumber.trim();
     const normalizedAddress = customerAddress.trim();
-    if (!normalizedAddress) {
-      setFeedbackMessage("Informe o endereço do cliente.");
+    if (!normalizedAddress && (!normalizedStreet || !normalizedNumber)) {
+      setFeedbackMessage("Informe o endereço completo ou logradouro e número.");
       return;
     }
 
@@ -248,6 +311,14 @@ export default function ReservationsPage() {
         customerDocumentNumber: normalizedDocumentNumber,
         customerPhoneNumber: normalizedPhoneNumber,
         customerAddress: normalizedAddress,
+        customerZipCode: customerZipCode.replace(/\D/g, "") || undefined,
+        customerStreet: normalizedStreet || undefined,
+        customerNumber: normalizedNumber || undefined,
+        customerComplement: customerComplement.trim() || undefined,
+        customerNeighborhood: customerNeighborhood.trim() || undefined,
+        customerCity: customerCity.trim() || undefined,
+        customerState: customerState.trim().toUpperCase() || undefined,
+        customerReference: customerReference.trim() || undefined,
         notes: notes.trim() || undefined,
         hasBalloonArch,
         isEntryPaid,
@@ -448,13 +519,87 @@ export default function ReservationsPage() {
               />
 
               <Input
-                label="Endereço"
+                label="CEP"
+                value={customerZipCode}
+                onChange={(event) => void handleZipCodeLookup(event.target.value)}
+                maxLength={9}
+                placeholder="00000-000"
+              />
+
+              <Input
+                label="Logradouro"
+                value={customerStreet}
+                onChange={(event) => setCustomerStreet(event.target.value)}
+                maxLength={180}
+                placeholder="Rua, avenida, praça..."
+              />
+
+              <Input
+                label="Número"
+                value={customerNumber}
+                onChange={(event) => setCustomerNumber(event.target.value)}
+                maxLength={20}
+                placeholder="Ex.: 123"
+              />
+
+              <Input
+                label="Complemento"
+                value={customerComplement}
+                onChange={(event) => setCustomerComplement(event.target.value)}
+                maxLength={120}
+                placeholder="Apartamento, bloco, sala..."
+              />
+
+              <Input
+                label="Bairro"
+                value={customerNeighborhood}
+                onChange={(event) => setCustomerNeighborhood(event.target.value)}
+                maxLength={120}
+                placeholder="Ex.: Centro"
+              />
+
+              <Input
+                label="Cidade"
+                value={customerCity}
+                onChange={(event) => setCustomerCity(event.target.value)}
+                maxLength={120}
+                placeholder="Ex.: São José dos Campos"
+              />
+
+              <Input
+                label="UF"
+                value={customerState}
+                onChange={(event) => setCustomerState(event.target.value.toUpperCase())}
+                maxLength={2}
+                placeholder="SP"
+              />
+
+              <Input
+                label="Referência"
+                value={customerReference}
+                onChange={(event) => setCustomerReference(event.target.value)}
+                maxLength={250}
+                placeholder="Ponto de referência para entrega."
+              />
+
+              <Input
+                label="Endereço legado (opcional)"
                 value={customerAddress}
                 onChange={(event) => setCustomerAddress(event.target.value)}
                 maxLength={250}
-                placeholder="Rua, número, bairro"
+                placeholder="Usado apenas como fallback de compatibilidade."
                 className="md:col-span-2"
               />
+
+              {loadingZipCodeLookup ? (
+                <p className="md:col-span-2 text-xs text-white/60">Consultando CEP...</p>
+              ) : null}
+
+              {zipCodeLookupError ? (
+                <div className="md:col-span-2">
+                  <Alert tone="info" message={zipCodeLookupError} />
+                </div>
+              ) : null}
 
               <label className="md:col-span-2 flex flex-col gap-2 text-sm text-white/80">
                 <span className="text-xs uppercase tracking-[0.2em]">Observações</span>
@@ -602,7 +747,20 @@ export default function ReservationsPage() {
                       <p className="text-xs text-white/50">Cliente: {reservation.customerName}</p>
                       <p className="text-xs text-white/50">Documento: {reservation.customerDocumentNumber}</p>
                       <p className="text-xs text-white/50">Telefone: {reservation.customerPhoneNumber}</p>
-                      <p className="text-xs text-white/50">Endereço: {reservation.customerAddress}</p>
+                      <p className="text-xs text-white/50">
+                        Endereço:{" "}
+                        {buildAddressLine({
+                          street: reservation.customerStreet,
+                          number: reservation.customerNumber,
+                          complement: reservation.customerComplement,
+                          fallbackAddress: reservation.customerAddress,
+                        })}
+                      </p>
+                      <p className="text-xs text-white/50">
+                        Bairro/Cidade: {reservation.customerNeighborhood ?? "Não informado"} /{" "}
+                        {reservation.customerCity ?? "Não informado"}
+                        {reservation.customerState ? ` - ${reservation.customerState}` : ""}
+                      </p>
                       <p className="text-xs text-white/50">
                         Arco de balões: {reservation.hasBalloonArch ? "Sim" : "Não"}
                       </p>

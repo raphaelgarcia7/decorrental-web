@@ -4,71 +4,57 @@
   <img width="360" alt="DecorRental" src="https://github.com/user-attachments/assets/9bcd611e-183a-44c9-bf4a-845d98fb97c4" />
 </p>
 
-## Contexto real
+## Contexto
 
-Front-end do sistema DecorRental, criado para operar o dia a dia de uma empresa familiar de locacao de decoracoes.
-O foco e oferecer um painel simples para controle de kits, reservas e disponibilidade.
-
-## Objetivo
-
-Mostrar um fluxo completo de operacao em cima da API, com autenticação, listagem, criação e cancelamento de reservas.
+Frontend do DecorRental para operação diária da locadora: cadastro, reservas, contratos e calendário.
 
 ## Stack
 
-- Next.js 14 (App Router)
+- Next.js 16 (App Router)
 - TypeScript
 - Tailwind CSS
 
-## Telas
+## Funcionalidades
 
-- Login
-- Dashboard (resumo de kits e reservas)
-- Kits (lista e criacao)
-- Detalhe do kit (reservas e cancelamento)
-- Calendario de reservas
+- Login com JWT.
+- Gestão de kits, categorias e itens de estoque.
+- Tela de reservas com:
+  - seleção de kit e categoria;
+  - dados completos do cliente;
+  - endereço estruturado (CEP, logradouro, número, complemento, bairro, cidade, UF, referência);
+  - autocomplete de CEP via API;
+  - edição e cancelamento de reservas;
+  - opção de exceção de estoque.
+- Geração de contrato em Word, PDF e impressão.
+- Calendário de reservas.
 
 ## Como executar
 
-1. Instale dependencias:
+1. Instale dependências:
 
 ```bash
 npm install
 ```
 
-2. Crie um `.env.local` com base no `.env.example`:
+2. Crie o arquivo de ambiente:
 
 ```bash
 copy .env.example .env.local
 ```
 
-3. Rode o projeto:
+3. Configure:
+
+```env
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+```
+
+4. Rode a aplicação:
 
 ```bash
 npm run dev
 ```
 
 Acesse `http://localhost:3000`.
-
-## Variaveis
-
-- `NEXT_PUBLIC_API_BASE_URL`: URL da DecorRental API.
-
-## API usada no front
-
-Esta UI consome a API em:
-
-```
-https://decorrental-api-production.up.railway.app
-```
-
-Para rodar local, ajuste `NEXT_PUBLIC_API_BASE_URL` para `http://localhost:8080`.
-
-## Fluxo rapido (teste)
-
-1. Acesse `/login`.
-2. Informe as credenciais da API.
-3. Crie um kit.
-4. Acesse o kit e crie uma reserva.
 
 ## Scripts
 
@@ -78,10 +64,3 @@ npm run build
 npm run start
 npm run lint
 ```
-
-## Planos futuros
-
-- Calendario em visao mensal.
-- Tela de disponibilidade por kit.
-- Exportacao de reservas (CSV).
-- Deploy do front e docs de ambiente.
